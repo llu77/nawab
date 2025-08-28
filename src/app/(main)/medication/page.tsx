@@ -68,7 +68,7 @@ export default function MedicationPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <>
       <PageHeader
         title="أداة الأدوية الشخصية"
         description="اقتراح أدوية بديلة مع مراعاة تاريخ المريض والجينات والوصفات الطبية الحالية."
@@ -89,7 +89,7 @@ export default function MedicationPage() {
                       <FormItem>
                         <FormLabel>الأدوية الحالية</FormLabel>
                         <FormControl>
-                          <Input placeholder="مثال: Sertraline 50mg, Lorazepam 1mg" {...field} />
+                          <Input placeholder="مثال: Sertraline 50mg, Lorazepam 1mg" {...field} className="text-base" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -104,7 +104,7 @@ export default function MedicationPage() {
                         <FormControl>
                           <Textarea
                             placeholder="مثال: تم تشخيصه باضطراب اكتئابي كبير، تاريخ من ارتفاع ضغط الدم..."
-                            className="min-h-[150px]"
+                            className="min-h-[150px] text-base"
                             {...field}
                           />
                         </FormControl>
@@ -121,7 +121,7 @@ export default function MedicationPage() {
                         <FormControl>
                           <Textarea
                             placeholder="مثال: CYP2D6 poor metabolizer, MTHFR mutation..."
-                            className="min-h-[100px]"
+                            className="min-h-[100px] text-base"
                             {...field}
                           />
                         </FormControl>
@@ -132,11 +132,11 @@ export default function MedicationPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" disabled={isLoading} className="w-full">
+                  <Button type="submit" disabled={isLoading} className="w-full h-11 text-base">
                     {isLoading ? (
-                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                       <Loader2 className="ml-2 h-5 w-5 animate-spin" />
                     ) : (
-                      <Sparkles className="ml-2 h-4 w-4" />
+                      <Sparkles className="ml-2 h-5 w-5" />
                     )}
                     اقتراح البدائل
                   </Button>
@@ -152,28 +152,28 @@ export default function MedicationPage() {
             </CardHeader>
             <CardContent>
               {isLoading && (
-                <div className="flex flex-col items-center justify-center h-96">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="mt-4 text-muted-foreground">يقوم الذكاء الاصطناعي بالبحث عن بدائل...</p>
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
+                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                  <p className="mt-4 text-muted-foreground text-lg">يقوم الذكاء الاصطناعي بالبحث عن بدائل...</p>
                 </div>
               )}
               {!isLoading && !result && (
-                <div className="flex flex-col items-center justify-center h-96 text-center">
-                  <div className="p-4 bg-accent/50 rounded-full">
-                    <Pill className="h-10 w-10 text-primary" />
+                 <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
+                  <div className="p-5 bg-accent/50 rounded-full">
+                    <Pill className="h-12 w-12 text-primary" />
                   </div>
-                  <p className="mt-4 text-muted-foreground">ستظهر بدائل الأدوية المقترحة هنا.</p>
+                  <p className="mt-6 text-lg text-muted-foreground max-w-sm">ستظهر بدائل الأدوية المقترحة هنا.</p>
                 </div>
               )}
               {result && (
-                <div className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-strong:text-foreground">
-                  <pre className="whitespace-pre-wrap font-body text-sm bg-muted/50 p-4 rounded-md">{result.alternatives}</pre>
+                <div className="prose prose-base max-w-none text-foreground prose-headings:text-foreground prose-strong:text-foreground">
+                  <pre className="whitespace-pre-wrap font-body text-base bg-muted/50 p-4 rounded-md">{result.alternatives}</pre>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 }

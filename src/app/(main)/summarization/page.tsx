@@ -60,7 +60,7 @@ export default function SummarizationPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <>
       <PageHeader
         title="مولد الملخصات بالذكاء الاصطناعي"
         description="تكثيف ملاحظات الجلسة وبيانات المريض في ملخصات سريعة وقابلة للقراءة لاسترجاع السياق بشكل أسرع."
@@ -83,7 +83,7 @@ export default function SummarizationPage() {
                         <FormControl>
                           <Textarea
                             placeholder="مثال: التركيبة السكانية، التشخيص، قائمة الأدوية، الحساسية..."
-                            className="min-h-[150px]"
+                            className="min-h-[150px] text-base"
                             {...field}
                           />
                         </FormControl>
@@ -100,7 +100,7 @@ export default function SummarizationPage() {
                         <FormControl>
                           <Textarea
                             placeholder="الصق ملاحظة جلسة حديثة أو أكثر هنا..."
-                            className="min-h-[250px]"
+                            className="min-h-[250px] text-base"
                             {...field}
                           />
                         </FormControl>
@@ -108,11 +108,11 @@ export default function SummarizationPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" disabled={isLoading} className="w-full">
+                  <Button type="submit" disabled={isLoading} className="w-full h-11 text-base">
                     {isLoading ? (
-                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="ml-2 h-5 w-5 animate-spin" />
                     ) : (
-                      <Sparkles className="ml-2 h-4 w-4" />
+                      <Sparkles className="ml-2 h-5 w-5" />
                     )}
                     إنشاء ملخص
                   </Button>
@@ -128,21 +128,21 @@ export default function SummarizationPage() {
             </CardHeader>
             <CardContent>
               {isLoading && (
-                <div className="flex flex-col items-center justify-center h-96">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="mt-4 text-muted-foreground">يقوم الذكاء الاصطناعي بتلخيص النص...</p>
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
+                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                  <p className="mt-4 text-muted-foreground text-lg">يقوم الذكاء الاصطناعي بتلخيص النص...</p>
                 </div>
               )}
               {!isLoading && !result && (
-                <div className="flex flex-col items-center justify-center h-96 text-center">
-                  <div className="p-4 bg-accent/50 rounded-full">
-                    <FileText className="h-10 w-10 text-primary" />
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
+                  <div className="p-5 bg-accent/50 rounded-full">
+                    <FileText className="h-12 w-12 text-primary" />
                   </div>
-                  <p className="mt-4 text-muted-foreground">سيظهر الملخص الذي تم إنشاؤه هنا.</p>
+                   <p className="mt-6 text-lg text-muted-foreground max-w-sm">سيظهر الملخص الذي تم إنشاؤه هنا.</p>
                 </div>
               )}
               {result && (
-                <div className="prose prose-sm max-w-none text-foreground prose-p:text-foreground prose-headings:text-foreground prose-strong:text-foreground">
+                 <div className="prose prose-lg max-w-none text-foreground prose-p:text-foreground prose-headings:text-foreground prose-strong:text-foreground">
                   <p>{result.summary}</p>
                 </div>
               )}
@@ -150,6 +150,6 @@ export default function SummarizationPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 }

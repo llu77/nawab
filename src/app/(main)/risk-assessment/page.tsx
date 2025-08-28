@@ -75,7 +75,7 @@ export default function RiskAssessmentPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <>
       <PageHeader
         title="أداة التنبؤ بالمخاطر"
         description="بناءً على الأنماط السلوكية، توقع احتمالية انتكاس المريض لتعديل خطط الرعاية والعلاج."
@@ -98,7 +98,7 @@ export default function RiskAssessmentPage() {
                         <FormControl>
                           <Textarea
                             placeholder="مثال: زيادة الانسحاب الاجتماعي، تغيرات في أنماط النوم، تفويت المواعيد..."
-                            className="min-h-[150px]"
+                            className="min-h-[150px] text-base"
                             {...field}
                           />
                         </FormControl>
@@ -115,7 +115,7 @@ export default function RiskAssessmentPage() {
                         <FormControl>
                           <Textarea
                             placeholder="مثال: أحداث الانتكاس السابقة، الالتزام بالعلاجات السابقة..."
-                            className="min-h-[100px]"
+                            className="min-h-[100px] text-base"
                             {...field}
                           />
                         </FormControl>
@@ -132,7 +132,7 @@ export default function RiskAssessmentPage() {
                         <FormControl>
                           <Textarea
                             placeholder="مثال: نقص الدعم الاجتماعي، حدث حياة مرهق حديث، تعاطي المخدرات..."
-                            className="min-h-[100px]"
+                            className="min-h-[100px] text-base"
                             {...field}
                           />
                         </FormControl>
@@ -140,11 +140,11 @@ export default function RiskAssessmentPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" disabled={isLoading} className="w-full">
+                  <Button type="submit" disabled={isLoading} className="w-full h-11 text-base">
                     {isLoading ? (
-                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="ml-2 h-5 w-5 animate-spin" />
                     ) : (
-                      <Sparkles className="ml-2 h-4 w-4" />
+                      <Sparkles className="ml-2 h-5 w-5" />
                     )}
                     توقع مخاطر الانتكاس
                   </Button>
@@ -160,43 +160,43 @@ export default function RiskAssessmentPage() {
             </CardHeader>
             <CardContent>
               {isLoading && (
-                <div className="flex flex-col items-center justify-center h-96">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="mt-4 text-muted-foreground">يقوم الذكاء الاصطناعي بحساب احتمالية الانتكاس...</p>
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
+                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                  <p className="mt-4 text-muted-foreground text-lg">يقوم الذكاء الاصطناعي بحساب احتمالية الانتكاس...</p>
                 </div>
               )}
               {!isLoading && !result && (
-                <div className="flex flex-col items-center justify-center h-96 text-center">
-                  <div className="p-4 bg-accent/50 rounded-full">
-                    <ShieldAlert className="h-10 w-10 text-primary" />
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
+                  <div className="p-5 bg-accent/50 rounded-full">
+                    <ShieldAlert className="h-12 w-12 text-primary" />
                   </div>
-                  <p className="mt-4 text-muted-foreground">سيظهر هنا توقع مخاطر انتكاس المريض.</p>
+                  <p className="mt-6 text-lg text-muted-foreground max-w-sm">سيظهر هنا توقع مخاطر انتكاس المريض.</p>
                 </div>
               )}
               {result && (
-                <div className="space-y-6">
+                <div className="space-y-8">
                   <div className="text-center">
-                    <p className="text-sm font-medium text-muted-foreground">احتمالية الانتكاس</p>
-                    <p className="text-6xl font-bold font-headline mt-2">
+                    <p className="text-base font-medium text-muted-foreground">احتمالية الانتكاس</p>
+                    <p className="text-7xl font-bold font-headline mt-2">
                       {result.relapseProbability.toFixed(1)}%
                     </p>
-                    <div className="flex items-center justify-center gap-2 mt-2">
-                      <span className={`px-3 py-1 text-sm font-semibold rounded-full text-white ${getRiskColor(result.relapseProbability)}`}>
+                    <div className="flex items-center justify-center gap-2 mt-4">
+                      <span className={`px-4 py-1.5 text-base font-semibold rounded-full text-white ${getRiskColor(result.relapseProbability)}`}>
                         خطر {getRiskLevel(result.relapseProbability)}
                       </span>
                     </div>
                   </div>
-                  <div className="w-full">
+                  <div className="w-full px-4">
                     <Progress value={result.relapseProbability} className="h-3 [&>div]:bg-primary" />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <div className="flex justify-between text-sm text-muted-foreground mt-2">
                       <span>منخفض</span>
                       <span>متوسط</span>
                       <span>مرتفع</span>
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2">الأساس المنطقي</h4>
-                    <p className="text-sm text-muted-foreground bg-accent/50 p-4 rounded-md">{result.rationale}</p>
+                    <h4 className="font-semibold text-lg mb-2">الأساس المنطقي</h4>
+                    <p className="text-base text-muted-foreground bg-accent/50 p-4 rounded-lg">{result.rationale}</p>
                   </div>
                 </div>
               )}
@@ -204,6 +204,6 @@ export default function RiskAssessmentPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 }

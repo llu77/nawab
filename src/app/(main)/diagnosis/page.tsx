@@ -68,7 +68,7 @@ export default function DiagnosisPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <>
       <PageHeader
         title="مساعد التشخيص بالذكاء الاصطناعي"
         description="تحليل ملاحظات الجلسة وتاريخ المريض لتوليد فرضيات تشخيصية بناءً على معايير DSM-5."
@@ -91,7 +91,7 @@ export default function DiagnosisPage() {
                         <FormControl>
                           <Textarea
                             placeholder="مثال: تاريخ من القلق، أدوية سابقة، تاريخ عائلي للأمراض النفسية..."
-                            className="min-h-[150px]"
+                            className="min-h-[150px] text-base"
                             {...field}
                           />
                         </FormControl>
@@ -108,7 +108,7 @@ export default function DiagnosisPage() {
                         <FormControl>
                           <Textarea
                             placeholder="أدخل ملاحظات الجلسة التفصيلية هنا. كل ملاحظة في سطر جديد."
-                            className="min-h-[250px]"
+                            className="min-h-[250px] text-base"
                             {...field}
                           />
                         </FormControl>
@@ -117,11 +117,11 @@ export default function DiagnosisPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" disabled={isLoading} className="w-full">
+                  <Button type="submit" disabled={isLoading} className="w-full h-11 text-base">
                     {isLoading ? (
-                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="ml-2 h-5 w-5 animate-spin" />
                     ) : (
-                      <Sparkles className="ml-2 h-4 w-4" />
+                      <Sparkles className="ml-2 h-5 w-5" />
                     )}
                     إنشاء التشخيص
                   </Button>
@@ -137,39 +137,39 @@ export default function DiagnosisPage() {
             </CardHeader>
             <CardContent>
               {isLoading && (
-                <div className="flex flex-col items-center justify-center h-96">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="mt-4 text-muted-foreground">يقوم الذكاء الاصطناعي بتحليل البيانات...</p>
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
+                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                  <p className="mt-4 text-muted-foreground text-lg">يقوم الذكاء الاصطناعي بتحليل البيانات...</p>
                 </div>
               )}
               {!isLoading && !result && (
-                <div className="flex flex-col items-center justify-center h-96 text-center">
-                  <div className="p-4 bg-accent/50 rounded-full">
-                    <BrainCircuit className="h-10 w-10 text-primary" />
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
+                  <div className="p-5 bg-accent/50 rounded-full">
+                    <BrainCircuit className="h-12 w-12 text-primary" />
                   </div>
-                  <p className="mt-4 text-muted-foreground">ستظهر هنا الرؤى التشخيصية التي تم إنشاؤها بواسطة الذكاء الاصطناعي.</p>
+                  <p className="mt-6 text-lg text-muted-foreground max-w-sm">ستظهر هنا الرؤى التشخيصية التي تم إنشاؤها بواسطة الذكاء الاصطناعي.</p>
                 </div>
               )}
               {result && (
                 <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
                   {result.diagnosisHypotheses.map((hypothesis, index) => (
                     <AccordionItem value={`item-${index}`} key={index}>
-                      <AccordionTrigger>
+                      <AccordionTrigger className="text-lg">
                         <div className="flex items-center gap-4">
-                          <span className="font-semibold text-base">{hypothesis.diagnosis}</span>
-                          <Badge variant={hypothesis.confidence > 0.7 ? "default" : "secondary"}>
+                          <span className="font-semibold">{hypothesis.diagnosis}</span>
+                          <Badge variant={hypothesis.confidence > 0.7 ? "default" : "secondary"} className="text-sm">
                             {`الثقة: ${(hypothesis.confidence * 100).toFixed(0)}%`}
                           </Badge>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="space-y-4 px-2">
                         <div>
-                          <h4 className="font-semibold mb-1">المنطق (معايير DSM-5)</h4>
-                          <p className="text-sm text-muted-foreground">{hypothesis.reasoning}</p>
+                          <h4 className="font-semibold text-base mb-1">المنطق (معايير DSM-5)</h4>
+                          <p className="text-base text-muted-foreground">{hypothesis.reasoning}</p>
                         </div>
                         <div>
-                          <h4 className="font-semibold mb-1">الأدلة الداعمة</h4>
-                          <p className="text-sm text-muted-foreground">{hypothesis.supportingEvidence}</p>
+                          <h4 className="font-semibold text-base mb-1">الأدلة الداعمة</h4>
+                          <p className="text-base text-muted-foreground">{hypothesis.supportingEvidence}</p>
                         </div>
                       </AccordionContent>
                     </AccordionItem>
@@ -180,6 +180,6 @@ export default function DiagnosisPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -11,14 +11,6 @@ import {
   CalendarDays,
 } from "lucide-react";
 
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -106,7 +98,7 @@ const quickAccessTools = [
 
 export default function DashboardPage() {
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <>
         <PageHeader title="لوحة التحكم" description="نظرة عامة على المرضى والمهام القادمة."/>
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
@@ -115,66 +107,66 @@ export default function DashboardPage() {
               التحليلات
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="overview" className="space-y-4">
+          <TabsContent value="overview" className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-base font-medium">
                     إجمالي المرضى
                   </CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Users className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">152</div>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="text-3xl font-bold">152</div>
+                  <p className="text-sm text-muted-foreground">
                     +12 عن الشهر الماضي
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-base font-medium">
                     المواعيد اليوم
                   </CardTitle>
-                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                  <CalendarDays className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">+5</div>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="text-3xl font-bold">+5</div>
+                  <p className="text-sm text-muted-foreground">
                     +2 عن الأمس
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-base font-medium">
                     تنبيهات المخاطر
                   </CardTitle>
-                  <ShieldAlert className="h-4 w-4 text-muted-foreground" />
+                  <ShieldAlert className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-destructive">3</div>
-                   <p className="text-xs text-muted-foreground">
+                  <div className="text-3xl font-bold text-destructive">3</div>
+                   <p className="text-sm text-muted-foreground">
                     1 تنبيه عالي الخطورة
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-base font-medium">
                     المهام المعلقة
                   </CardTitle>
-                  <Activity className="h-4 w-4 text-muted-foreground" />
+                  <Activity className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">7</div>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="text-3xl font-bold">7</div>
+                  <p className="text-sm text-muted-foreground">
                     2 منها تتطلب مراجعة
                   </p>
                 </CardContent>
               </Card>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
               <Card className="col-span-4">
                 <CardHeader>
                   <CardTitle>نظرة عامة على المرضى</CardTitle>
@@ -219,15 +211,15 @@ export default function DashboardPage() {
                     <div className="space-y-4">
                     {quickAccessTools.map((tool) => (
                         <Link href={tool.href} key={tool.title} className="group block">
-                        <div className="flex items-start gap-4 rounded-lg border p-3 transition-colors hover:bg-accent/50">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <tool.icon className="h-5 w-5" />
+                        <div className="flex items-start gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <tool.icon className="h-6 w-6" />
                             </div>
                             <div className="flex-1">
-                            <p className="font-semibold text-sm">{tool.title}</p>
-                            <p className="text-xs text-muted-foreground">{tool.description}</p>
+                            <p className="font-semibold text-base">{tool.title}</p>
+                            <p className="text-sm text-muted-foreground">{tool.description}</p>
                             </div>
-                            <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                            <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                         </div>
                         </Link>
                     ))}
@@ -237,6 +229,6 @@ export default function DashboardPage() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </>
   );
 }
