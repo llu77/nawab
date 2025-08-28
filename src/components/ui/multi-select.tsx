@@ -114,7 +114,7 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
                     disabled
                     className="flex justify-center py-2 text-xs text-muted-foreground"
                 >
-                    اكتب للبحث عن الأعراض...
+                    اكتب للبحث...
                 </CommandItem>
               )}
               {Object.entries(groupedOptions).map(([group, options]) => {
@@ -130,8 +130,8 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
                           e.stopPropagation();
                         }}
                         onSelect={() => {
-                          setInputValue("")
                           onChange([...selected, option.value]);
+                          setInputValue("");
                         }}
                         className={"cursor-pointer text-base"}
                       >
