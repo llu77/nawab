@@ -2,10 +2,10 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Sparkles, UserPlus } from "lucide-react";
+import { Loader2, Sparkles, UserPlus, PlusCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/page-header";
-import { MultiSelect } from "@/components/ui/multi-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { SYMPTOM_CATEGORIES } from "@/lib/symptoms";
 import { registerPatient } from "./actions";
 
@@ -30,7 +30,7 @@ const newPatientFormSchema = z.object({
   name: z.string().min(3, "يجب أن يتكون الاسم من 3 أحرف على الأقل."),
   age: z.coerce.number().min(1, "العمر مطلوب.").max(120, "يرجى إدخال عمر صحيح."),
   patientHistory: z.string().min(20, "يرجى تقديم نبذة تاريخية لا تقل عن 20 حرفًا."),
-  symptoms: z.array(z.string()).min(3, "الرجاء اختيار 3 أعراض على الأقل.").max(10, "الرجاء اختيار 10 أعراض على الأكثر."),
+  symptoms: z.array(z.object({ value: z.string().min(1, "الرجاء اختيار عرض.") })).min(3, "الرجاء اختيار 3 أعراض على الأقل.").max(10, "الرجاء اختيار 10 أعراض على الأكثر."),
 });
 
 export default function NewPatientPage() {
@@ -43,18 +43,24 @@ export default function NewPatientPage() {
       name: "",
       age: "" as any,
       patientHistory: "",
-      symptoms: [],
+      symptoms: [{ value: "" }, { value: "" }, { value: "" }, { value: "" }],
     },
+  });
+
+  const { fields, append } = useFieldArray({
+    control: form.control,
+    name: "symptoms",
   });
 
   async function onSubmit(values: z.infer<typeof newPatientFormSchema>) {
     setIsLoading(true);
     
-    // Here you would typically call a server action to register the patient
-    // and activate the AI agents as per your design.
-    console.log(values);
+    const submissionValues = {
+        ...values,
+        symptoms: values.symptoms.map(s => s.value).filter(Boolean)
+    }
     
-    const response = await registerPatient(values);
+    const response = await registerPatient(submissionValues);
     
     setIsLoading(false);
 
@@ -72,14 +78,6 @@ export default function NewPatientPage() {
         });
     }
   }
-  
-  const symptomOptions = SYMPTOM_CATEGORIES.flatMap(category => 
-    category.symptoms.map(symptom => ({
-      value: symptom,
-      label: symptom,
-      group: category.name,
-    }))
-  );
 
   return (
     <>
@@ -144,26 +142,54 @@ export default function NewPatientPage() {
                         </FormItem>
                       )}
                     />
-                  <FormField
-                    control={form.control}
-                    name="symptoms"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>الأعراض الأولية</FormLabel>
-                        <FormControl>
-                          <MultiSelect
-                            options={symptomOptions}
-                            selected={field.value}
-                            onChange={field.onChange}
-                            placeholder="اختر من 3 إلى 10 أعراض..."
-                            className="text-base"
-                           />
-                        </FormControl>
-                         <FormDescription>حدد الأعراض الرئيسية التي يشتكي منها المريض حاليًا.</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  
+                  <div className="space-y-4">
+                    <FormLabel>الأعراض الأولية</FormLabel>
+                    {fields.map((field, index) => (
+                       <FormField
+                        key={field.id}
+                        control={form.control}
+                        name={`symptoms.${index}.value`}
+                        render={({ field }) => (
+                          <FormItem>
+                             <FormControl>
+                               <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <SelectTrigger className="text-base">
+                                  <SelectValue placeholder={`اختر العرض ${index + 1}...`} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {SYMPTOM_CATEGORIES.map((category) => (
+                                    <SelectGroup key={category.name}>
+                                      <SelectLabel>{category.name}</SelectLabel>
+                                      {category.symptoms.map((symptom) => (
+                                        <SelectItem key={symptom} value={symptom}>
+                                          {symptom}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectGroup>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    ))}
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => append({ value: "" })}
+                    >
+                      <PlusCircle className="ml-2 h-4 w-4" />
+                      إضافة عرض
+                    </Button>
+                    <FormDescription>حدد الأعراض الرئيسية التي يشتكي منها المريض حاليًا.</FormDescription>
+                    {form.formState.errors.symptoms && <p className="text-sm font-medium text-destructive">{form.formState.errors.symptoms.message}</p>}
+                  </div>
+                  
                   <Button type="submit" disabled={isLoading} className="w-full h-12 text-lg font-bold">
                     {isLoading ? (
                       <Loader2 className="ml-2 h-6 w-6 animate-spin" />

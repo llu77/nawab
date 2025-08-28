@@ -17,7 +17,9 @@ export async function registerPatient(input: NewPatientInput): Promise<{success:
     // Validate input server-side
     const validatedInput = newPatientFormSchema.safeParse(input);
     if (!validatedInput.success) {
-      return { success: false, error: "Invalid input data." };
+      // Create a more detailed error message from Zod issues
+      const errorMessages = validatedInput.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join(', ');
+      return { success: false, error: `Invalid input data: ${errorMessages}` };
     }
 
     // In a real application, you would:

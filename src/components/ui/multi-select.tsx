@@ -56,7 +56,12 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
   const selectables = options.filter(option => !selected.includes(option.value));
 
   const groupedOptions = React.useMemo(() => {
-    return selectables.reduce((acc, option) => {
+    let filteredOptions = selectables;
+    if (inputValue) {
+        filteredOptions = selectables.filter(option => option.label.toLowerCase().includes(inputValue.toLowerCase()));
+    }
+
+    return filteredOptions.reduce((acc, option) => {
       const group = option.group || "General";
       if (!acc[group]) {
         acc[group] = [];
@@ -64,13 +69,17 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
       acc[group].push(option);
       return acc;
     }, {} as Record<string, Option[]>);
-  }, [selectables]);
+  }, [selectables, inputValue]);
 
 
   return (
     <CommandPrimitive onKeyDown={handleKeyDown} className={cn("overflow-visible bg-transparent", className)}>
       <div
         className="group rounded-md border border-input px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+        onClick={() => {
+            setOpen(true);
+            inputRef.current?.focus();
+        }}
       >
         <div className="flex flex-wrap gap-1">
           {selected.map((value) => {
@@ -89,7 +98,10 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
                     e.preventDefault();
                     e.stopPropagation();
                   }}
-                  onClick={() => handleUnselect(value)}
+                  onClick={(e) => {
+                     e.stopPropagation(); // Stop propagation to prevent opening the dropdown
+                     handleUnselect(value)
+                  }}
                 >
                   <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                 </button>
@@ -102,7 +114,7 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
             onValueChange={setInputValue}
             onBlur={() => setOpen(false)}
             onFocus={() => setOpen(true)}
-            placeholder={placeholder}
+            placeholder={selected.length ? "" : placeholder}
             className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -111,14 +123,6 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
         {open && Object.keys(groupedOptions).length > 0 ? (
           <div className="absolute top-0 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
             <CommandList className="max-h-[300px] overflow-y-auto">
-              {inputValue.length > 0 && (
-                 <CommandItem
-                    disabled
-                    className="flex justify-center py-2 text-xs text-muted-foreground"
-                >
-                    اكتب للبحث...
-                </CommandItem>
-              )}
               {Object.entries(groupedOptions).map(([group, groupOptions]) => {
                 return (
                   <CommandGroup key={group} heading={<span className="text-base font-bold text-foreground">{group}</span>} className="p-2">
