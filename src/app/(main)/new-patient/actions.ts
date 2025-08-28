@@ -7,8 +7,14 @@ import { orchestratorAgent } from "@/ai/flows/orchestrator-agent";
 const newPatientFormSchema = z.object({
   name: z.string().min(3),
   age: z.coerce.number().min(1).max(120),
+  gender: z.string().min(1, "الجنس مطلوب."),
   patientHistory: z.string().min(20),
   symptoms: z.array(z.string()).min(3).max(10),
+  currentMedications: z.array(z.string()).optional(),
+  addictionHistory: z.boolean(),
+  addictionDetails: z.string().optional(),
+  familyHistory: z.boolean(),
+  familyHistoryDetails: z.string().optional(),
 });
 
 type NewPatientInput = z.infer<typeof newPatientFormSchema>;

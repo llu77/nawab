@@ -25,7 +25,7 @@ const DiagnosisHypothesisSchema = z.object({
   supportingEvidence: z.string().describe('Supporting evidence from session notes and patient history.'),
 });
 
-const DiagnosePatientOutputSchema = z.object({
+export const DiagnosePatientOutputSchema = z.object({
   diagnosisHypotheses: z.array(DiagnosisHypothesisSchema).describe('An array of possible diagnoses with confidence levels and reasoning.'),
 });
 export type DiagnosePatientOutput = z.infer<typeof DiagnosePatientOutputSchema>;

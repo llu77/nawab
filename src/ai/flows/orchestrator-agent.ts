@@ -19,8 +19,14 @@ export const OrchestratorInputSchema = z.object({
     patientId: z.string().describe("The unique identifier for the patient."),
     name: z.string().describe("The patient's full name."),
     age: z.number().describe("The patient's age."),
+    gender: z.string().describe("The patient's gender."),
     patientHistory: z.string().describe("A brief summary of the patient's medical and psychological history."),
     symptoms: z.array(z.string()).describe("A list of the patient's primary presenting symptoms."),
+    currentMedications: z.array(z.string()).optional().describe("A list of the patient's current or previous medications."),
+    addictionHistory: z.boolean().describe("Whether the patient has a history of addiction."),
+    addictionDetails: z.string().optional().describe("Details about the patient's addiction history."),
+    familyHistory: z.boolean().describe("Whether the patient has a family history of mental illness."),
+    familyHistoryDetails: z.string().optional().describe("Details about the family history of mental illness."),
 });
 export type OrchestratorInput = z.infer<typeof OrchestratorInputSchema>;
 
@@ -35,7 +41,6 @@ export async function orchestratorAgent(input: OrchestratorInput): Promise<Orche
     return orchestratorAgentFlow(input);
 }
 
-
 const orchestratorAgentFlow = ai.defineFlow(
   {
     name: 'orchestratorAgentFlow',
@@ -45,29 +50,40 @@ const orchestratorAgentFlow = ai.defineFlow(
   async (input) => {
     console.log(`Orchestrator agent started for patient: ${input.patientId}`);
     
+    // Combine all available information into a rich context for the agents
+    let comprehensiveHistory = `Patient Name: ${input.name}, Age: ${input.age}, Gender: ${input.gender}.\n`;
+    comprehensiveHistory += `Brief History: ${input.patientHistory}\n`;
+    comprehensiveHistory += `Primary Symptoms Reported: ${input.symptoms.join(', ')}.\n`;
+    
+    if (input.currentMedications && input.currentMedications.length > 0) {
+        comprehensiveHistory += `Current/Previous Medications: ${input.currentMedications.join(', ')}.\n`;
+    }
+    if (input.addictionHistory) {
+        comprehensiveHistory += `History of Addiction: Yes. Details: ${input.addictionDetails || 'Not specified'}.\n`;
+    }
+    if (input.familyHistory) {
+        comprehensiveHistory += `Family History of Mental Illness: Yes. Details: ${input.familyHistoryDetails || 'Not specified'}.\n`;
+    }
+    
     // Prepare inputs for the sub-agents
-    const combinedHistoryAndSymptoms = `${input.patientHistory}\n\nPrimary Symptoms Reported:\n- ${input.symptoms.join('\n- ')}`;
-
     const diagnosisInput: DiagnosePatientInput = {
-        // For a new patient, session notes might be empty or derived from the initial intake
         sessionNotes: [`Initial intake notes for ${input.name}, age ${input.age}.`],
-        patientHistory: combinedHistoryAndSymptoms,
+        patientHistory: comprehensiveHistory,
     };
 
     const relapsePredictionInput: RelapsePredictionInput = {
-        // Behavioral patterns could be derived from the initial symptom description
-        behavioralPatterns: `Initial reported symptoms include: ${input.symptoms.join(', ')}. Patient history summary: ${input.patientHistory}`,
-        patientHistory: combinedHistoryAndSymptoms,
-        // Risk factors could be empty initially or derived from history
-        riskFactors: "To be determined in subsequent sessions. Initial assessment based on provided history.",
+        behavioralPatterns: `Initial assessment based on reported symptoms: ${input.symptoms.join(', ')}.`,
+        patientHistory: comprehensiveHistory,
+        riskFactors: "Initial risk factors to consider include reported symptoms, medication history, and addiction/family history if provided.",
     };
     
     const summaryInput: SummaryInput = {
-        sessionNotes: `Initial intake for ${input.name}.`,
-        patientData: `Patient: ${input.name}, Age: ${input.age}.\nHistory: ${input.patientHistory}\nSymptoms: ${input.symptoms.join(', ')}`,
+        sessionNotes: `Initial intake session for patient ${input.name}.`,
+        patientData: comprehensiveHistory,
     };
 
     // Run agents concurrently
+    console.log("Starting concurrent analysis for Diagnosis, Relapse Prediction, and Summarization...");
     const [diagnosis, relapsePrediction, summary] = await Promise.all([
       diagnosePatient(diagnosisInput),
       predictRelapseProbability(relapsePredictionInput),
