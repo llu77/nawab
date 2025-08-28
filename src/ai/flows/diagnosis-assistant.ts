@@ -40,7 +40,7 @@ const prompt = ai.definePrompt({
   output: {schema: DiagnosePatientOutputSchema},
   prompt: `You are an AI-powered diagnostic assistant for mental health professionals.
 
-  Your task is to analyze the provided session notes, patient history, and reported symptoms to generate possible diagnoses, along with confidence levels and transparent reasoning paths based on DSM-5 criteria.
+  Your task is to analyze the provided session notes, patient history, and reported symptoms to generate possible diagnoses, along with confidence levels, and transparent reasoning paths based on DSM-5 criteria.
 
   Session Notes:
   {{#each sessionNotes}}
