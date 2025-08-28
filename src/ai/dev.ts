@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import '@/ai/flows/relapse-prediction.ts';
 import '@/ai/flows/medication-alternatives.ts';
 import '@/ai/flows/diagnosis-assistant.ts';
