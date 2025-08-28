@@ -14,7 +14,7 @@ import {z} from 'genkit';
 
 const DiagnosePatientInputSchema = z.object({
   sessionNotes: z.array(z.string()).describe('An array of session notes for the patient.'),
-  patientHistory: z.string().describe('The patient\'s medical history.'),
+  patientHistory: z.string().describe("The patient's medical history."),
 });
 export type DiagnosePatientInput = z.infer<typeof DiagnosePatientInputSchema>;
 
