@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Pill } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -70,14 +70,14 @@ export default function MedicationPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="Personalized Medication Tool"
-        description="Suggest alternative medications considering patient history, genetics, and current prescriptions."
+        title="أداة الأدوية الشخصية"
+        description="اقتراح أدوية بديلة مع مراعاة تاريخ المريض والجينات والوصفات الطبية الحالية."
       />
       <div className="grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Patient Information</CardTitle>
+              <CardTitle>معلومات المريض</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -87,9 +87,9 @@ export default function MedicationPage() {
                     name="currentMedications"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Current Medications</FormLabel>
+                        <FormLabel>الأدوية الحالية</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Sertraline 50mg, Lorazepam 1mg" {...field} />
+                          <Input placeholder="مثال: Sertraline 50mg, Lorazepam 1mg" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -100,10 +100,10 @@ export default function MedicationPage() {
                     name="patientHistory"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Patient Medical History</FormLabel>
+                        <FormLabel>تاريخ المريض الطبي</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="e.g., Diagnosed with Major Depressive Disorder, history of hypertension..."
+                            placeholder="مثال: تم تشخيصه باضطراب اكتئابي كبير، تاريخ من ارتفاع ضغط الدم..."
                             className="min-h-[150px]"
                             {...field}
                           />
@@ -117,16 +117,16 @@ export default function MedicationPage() {
                     name="patientGenetics"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Patient Genetics (Optional)</FormLabel>
+                        <FormLabel>جينات المريض (اختياري)</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="e.g., CYP2D6 poor metabolizer, MTHFR mutation..."
+                            placeholder="مثال: CYP2D6 poor metabolizer, MTHFR mutation..."
                             className="min-h-[100px]"
                             {...field}
                           />
                         </FormControl>
                         <FormDescription>
-                          Provide pharmacogenomic data if available for more personalized results.
+                          توفير بيانات علم الوراثة الدوائي إذا كانت متاحة للحصول على نتائج أكثر تخصيصًا.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -134,11 +134,11 @@ export default function MedicationPage() {
                   />
                   <Button type="submit" disabled={isLoading} className="w-full">
                     {isLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                     ) : (
-                      <Sparkles className="mr-2 h-4 w-4" />
+                      <Sparkles className="ml-2 h-4 w-4" />
                     )}
-                    Suggest Alternatives
+                    اقتراح البدائل
                   </Button>
                 </form>
               </Form>
@@ -148,13 +148,13 @@ export default function MedicationPage() {
         <div className="lg:col-span-3">
           <Card className="min-h-full">
             <CardHeader>
-              <CardTitle>Suggested Alternative Medications</CardTitle>
+              <CardTitle>الأدوية البديلة المقترحة</CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading && (
                 <div className="flex flex-col items-center justify-center h-96">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="mt-4 text-muted-foreground">AI is searching for alternatives...</p>
+                  <p className="mt-4 text-muted-foreground">يقوم الذكاء الاصطناعي بالبحث عن بدائل...</p>
                 </div>
               )}
               {!isLoading && !result && (
@@ -162,7 +162,7 @@ export default function MedicationPage() {
                   <div className="p-4 bg-accent/50 rounded-full">
                     <Pill className="h-10 w-10 text-primary" />
                   </div>
-                  <p className="mt-4 text-muted-foreground">Suggested medication alternatives will appear here.</p>
+                  <p className="mt-4 text-muted-foreground">ستظهر بدائل الأدوية المقترحة هنا.</p>
                 </div>
               )}
               {result && (

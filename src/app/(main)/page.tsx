@@ -4,15 +4,22 @@ import {
   Activity,
   ArrowUpRight,
   BrainCircuit,
-  CalendarDays,
-  FileText,
   Pill,
   ShieldAlert,
-  User,
+  FileText,
+  Users,
+  CalendarDays,
 } from "lucide-react";
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,175 +36,207 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/page-header";
+
+const patients = [
+  {
+    id: "728ed52f",
+    name: "John Doe",
+    lastVisit: "2024-07-20",
+    riskLevel: "Low",
+    nextAppointment: "2024-08-15",
+  },
+  {
+    id: "489e1d42",
+    name: "Jane Smith",
+    lastVisit: "2024-07-18",
+    riskLevel: "High",
+    nextAppointment: "2024-08-10",
+  },
+  {
+    id: "f3f7a4b1",
+    name: "Peter Jones",
+    lastVisit: "2024-07-22",
+    riskLevel: "Medium",
+    nextAppointment: "2024-08-12",
+  },
+  {
+    id: "a1b2c3d4",
+    name: "Emily Brown",
+    lastVisit: "2024-07-21",
+    riskLevel: "Low",
+    nextAppointment: "2024-08-20",
+  },
+  {
+    id: "e5f6g7h8",
+    name: "Michael Wilson",
+    lastVisit: "2024-07-19",
+    riskLevel: "Medium",
+    nextAppointment: "2024-08-18",
+  },
+];
 
 const quickAccessTools = [
   {
-    title: "Diagnosis Assistant",
-    description: "Analyze notes for diagnoses.",
+    title: "مساعد التشخيص",
+    description: "تحليل الملاحظات للتشخيص.",
     icon: BrainCircuit,
     href: "/diagnosis",
   },
   {
-    title: "Medication",
-    description: "Suggest alternatives & check interactions.",
+    title: "الأدوية",
+    description: "اقتراح بدائل وفحص التفاعلات.",
     icon: Pill,
     href: "/medication",
   },
   {
-    title: "Risk Assessment",
-    description: "Predict relapse and other risks.",
+    title: "تقييم المخاطر",
+    description: "توقع الانتكاس ومخاطر أخرى.",
     icon: ShieldAlert,
     href: "/risk-assessment",
   },
   {
-    title: "Summarization",
-    description: "Generate summaries of patient data.",
+    title: "التلخيص",
+    description: "إنشاء ملخصات لبيانات المريض.",
     icon: FileText,
     href: "/summarization",
   },
 ];
 
-const appointments = [
-  { name: "John Doe", time: "10:00 AM", date: "2024-08-15" },
-  { name: "Jane Smith", time: "11:30 AM", date: "2024-08-15" },
-  { name: "Peter Jones", time: "2:00 PM", date: "2024-08-16" },
-];
-
-const chartData = [
-  { month: "Jan", score: 65 },
-  { month: "Feb", score: 72 },
-  { month: "Mar", score: 68 },
-  { month: "Apr", score: 75 },
-  { month: "May", score: 80 },
-  { month: "Jun", score: 78 },
-];
-
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-8">
-      <PageHeader title="Dashboard" description="Welcome back, Dr. Smith. Here's your clinical overview." />
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Patients</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">124</div>
-            <p className="text-xs text-muted-foreground">+5 since last week</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Appointments Today</CardTitle>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">2 upcoming in the next hour</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Open Alerts</CardTitle>
-            <ShieldAlert className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">3</div>
-            <p className="text-xs text-muted-foreground">1 critical risk detected</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Recent Summaries</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">+2 generated today</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-           <Card>
-            <CardHeader>
-              <CardTitle>AI Quick Access</CardTitle>
-              <CardDescription>Use AI-powered tools to enhance your clinical workflow.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
-              {quickAccessTools.map((tool) => (
-                <Link href={tool.href} key={tool.title} className="group">
-                  <div className="flex items-start gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <tool.icon className="h-6 w-6" />
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <PageHeader title="لوحة التحكم" description="نظرة عامة على المرضى والمهام القادمة."/>
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
+            <TabsTrigger value="analytics" disabled>
+              التحليلات
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    إجمالي المرضى
+                  </CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">152</div>
+                  <p className="text-xs text-muted-foreground">
+                    +12 عن الشهر الماضي
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    المواعيد اليوم
+                  </CardTitle>
+                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">+5</div>
+                  <p className="text-xs text-muted-foreground">
+                    +2 عن الأمس
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    تنبيهات المخاطر
+                  </CardTitle>
+                  <ShieldAlert className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-destructive">3</div>
+                   <p className="text-xs text-muted-foreground">
+                    1 تنبيه عالي الخطورة
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    المهام المعلقة
+                  </CardTitle>
+                  <Activity className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">7</div>
+                  <p className="text-xs text-muted-foreground">
+                    2 منها تتطلب مراجعة
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+              <Card className="col-span-4">
+                <CardHeader>
+                  <CardTitle>نظرة عامة على المرضى</CardTitle>
+                </CardHeader>
+                <CardContent className="pl-2">
+                   <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>اسم المريض</TableHead>
+                        <TableHead>آخر زيارة</TableHead>
+                        <TableHead>مستوى الخطورة</TableHead>
+                        <TableHead className="text-right">الموعد القادم</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {patients.map((patient) => (
+                        <TableRow key={patient.id}>
+                          <TableCell className="font-medium">{patient.name}</TableCell>
+                          <TableCell>{patient.lastVisit}</TableCell>
+                          <TableCell>
+                             <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                                patient.riskLevel === 'High' ? 'bg-red-100 text-red-800' :
+                                patient.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-green-100 text-green-800'
+                              }`}>{patient.riskLevel}</span>
+                          </TableCell>
+                          <TableCell className="text-right">{patient.nextAppointment}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+              <Card className="col-span-3">
+                 <CardHeader>
+                  <CardTitle>أدوات الذكاء الاصطناعي</CardTitle>
+                  <CardDescription>
+                    أدوات مساعدة لتعزيز سير عملك.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                    {quickAccessTools.map((tool) => (
+                        <Link href={tool.href} key={tool.title} className="group block">
+                        <div className="flex items-start gap-4 rounded-lg border p-3 transition-colors hover:bg-accent/50">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <tool.icon className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                            <p className="font-semibold text-sm">{tool.title}</p>
+                            <p className="text-xs text-muted-foreground">{tool.description}</p>
+                            </div>
+                            <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                        </div>
+                        </Link>
+                    ))}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-semibold">{tool.title}</p>
-                      <p className="text-sm text-muted-foreground">{tool.description}</p>
-                    </div>
-                    <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                  </div>
-                </Link>
-              ))}
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Treatment Progress</CardTitle>
-              <CardDescription>Aggregate patient mood score over the last 6 months.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}>
-                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} domain={[50, 90]}/>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--background))",
-                      borderColor: "hsl(var(--border))",
-                    }}
-                  />
-                  <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--primary))" }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upcoming Appointments</CardTitle>
-              <CardDescription>Your schedule for the next two days.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Patient</TableHead>
-                    <TableHead className="text-right">Time</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {appointments.map((appt) => (
-                    <TableRow key={appt.name}>
-                      <TableCell>
-                        <div className="font-medium">{appt.name}</div>
-                        <div className="text-sm text-muted-foreground">{new Date(appt.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric'})}</div>
-                      </TableCell>
-                      <TableCell className="text-right">{appt.time}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
-    </div>
   );
 }

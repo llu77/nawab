@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Sparkles, TrendingUp, TrendingDown } from "lucide-react";
+import { Loader2, Sparkles, ShieldAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -69,22 +69,22 @@ export default function RiskAssessmentPage() {
   };
   
   const getRiskLevel = (probability: number) => {
-    if (probability > 70) return "High";
-    if (probability > 40) return "Moderate";
-    return "Low";
+    if (probability > 70) return "مرتفع";
+    if (probability > 40) return "متوسط";
+    return "منخفض";
   };
 
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="Predictive Risk Tool"
-        description="Based on behavioral patterns, predict patient relapse probability to adjust care and therapy plans."
+        title="أداة التنبؤ بالمخاطر"
+        description="بناءً على الأنماط السلوكية، توقع احتمالية انتكاس المريض لتعديل خطط الرعاية والعلاج."
       />
       <div className="grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Patient Observations</CardTitle>
+              <CardTitle>ملاحظات المريض</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -94,10 +94,10 @@ export default function RiskAssessmentPage() {
                     name="behavioralPatterns"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Behavioral Patterns</FormLabel>
+                        <FormLabel>الأنماط السلوكية</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="e.g., Increased social withdrawal, changes in sleep patterns, missed appointments..."
+                            placeholder="مثال: زيادة الانسحاب الاجتماعي، تغيرات في أنماط النوم، تفويت المواعيد..."
                             className="min-h-[150px]"
                             {...field}
                           />
@@ -111,10 +111,10 @@ export default function RiskAssessmentPage() {
                     name="patientHistory"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Relevant Patient History</FormLabel>
+                        <FormLabel>تاريخ المريض ذو الصلة</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="e.g., Previous relapse events, adherence to past treatments..."
+                            placeholder="مثال: أحداث الانتكاس السابقة، الالتزام بالعلاجات السابقة..."
                             className="min-h-[100px]"
                             {...field}
                           />
@@ -128,10 +128,10 @@ export default function RiskAssessmentPage() {
                     name="riskFactors"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Known Risk Factors</FormLabel>
+                        <FormLabel>عوامل الخطر المعروفة</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="e.g., Lack of social support, recent stressful life event, substance use..."
+                            placeholder="مثال: نقص الدعم الاجتماعي، حدث حياة مرهق حديث، تعاطي المخدرات..."
                             className="min-h-[100px]"
                             {...field}
                           />
@@ -142,11 +142,11 @@ export default function RiskAssessmentPage() {
                   />
                   <Button type="submit" disabled={isLoading} className="w-full">
                     {isLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                     ) : (
-                      <Sparkles className="mr-2 h-4 w-4" />
+                      <Sparkles className="ml-2 h-4 w-4" />
                     )}
-                    Predict Relapse Risk
+                    توقع مخاطر الانتكاس
                   </Button>
                 </form>
               </Form>
@@ -156,13 +156,13 @@ export default function RiskAssessmentPage() {
         <div className="lg:col-span-3">
           <Card className="min-h-full">
             <CardHeader>
-              <CardTitle>Relapse Prediction</CardTitle>
+              <CardTitle>التنبؤ بالانتكاس</CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading && (
                 <div className="flex flex-col items-center justify-center h-96">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="mt-4 text-muted-foreground">AI is calculating relapse probability...</p>
+                  <p className="mt-4 text-muted-foreground">يقوم الذكاء الاصطناعي بحساب احتمالية الانتكاس...</p>
                 </div>
               )}
               {!isLoading && !result && (
@@ -170,32 +170,32 @@ export default function RiskAssessmentPage() {
                   <div className="p-4 bg-accent/50 rounded-full">
                     <ShieldAlert className="h-10 w-10 text-primary" />
                   </div>
-                  <p className="mt-4 text-muted-foreground">The patient's relapse risk prediction will appear here.</p>
+                  <p className="mt-4 text-muted-foreground">سيظهر هنا توقع مخاطر انتكاس المريض.</p>
                 </div>
               )}
               {result && (
                 <div className="space-y-6">
                   <div className="text-center">
-                    <p className="text-sm font-medium text-muted-foreground">Relapse Probability</p>
+                    <p className="text-sm font-medium text-muted-foreground">احتمالية الانتكاس</p>
                     <p className="text-6xl font-bold font-headline mt-2">
                       {result.relapseProbability.toFixed(1)}%
                     </p>
                     <div className="flex items-center justify-center gap-2 mt-2">
                       <span className={`px-3 py-1 text-sm font-semibold rounded-full text-white ${getRiskColor(result.relapseProbability)}`}>
-                        {getRiskLevel(result.relapseProbability)} Risk
+                        خطر {getRiskLevel(result.relapseProbability)}
                       </span>
                     </div>
                   </div>
                   <div className="w-full">
                     <Progress value={result.relapseProbability} className="h-3 [&>div]:bg-primary" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                      <span>Low</span>
-                      <span>Moderate</span>
-                      <span>High</span>
+                      <span>منخفض</span>
+                      <span>متوسط</span>
+                      <span>مرتفع</span>
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2">Rationale</h4>
+                    <h4 className="font-semibold mb-2">الأساس المنطقي</h4>
                     <p className="text-sm text-muted-foreground bg-accent/50 p-4 rounded-md">{result.rationale}</p>
                   </div>
                 </div>

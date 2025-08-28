@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, BrainCircuit } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -70,14 +70,14 @@ export default function DiagnosisPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="AI Diagnosis Assistant"
-        description="Analyze session notes and patient history to generate diagnostic hypotheses based on DSM-5 criteria."
+        title="مساعد التشخيص بالذكاء الاصطناعي"
+        description="تحليل ملاحظات الجلسة وتاريخ المريض لتوليد فرضيات تشخيصية بناءً على معايير DSM-5."
       />
       <div className="grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Patient Data</CardTitle>
+              <CardTitle>بيانات المريض</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -87,10 +87,10 @@ export default function DiagnosisPage() {
                     name="patientHistory"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Patient History</FormLabel>
+                        <FormLabel>تاريخ المريض</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="e.g., History of anxiety, previous medications, family history of mental illness..."
+                            placeholder="مثال: تاريخ من القلق، أدوية سابقة، تاريخ عائلي للأمراض النفسية..."
                             className="min-h-[150px]"
                             {...field}
                           />
@@ -104,26 +104,26 @@ export default function DiagnosisPage() {
                     name="sessionNotes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Session Notes</FormLabel>
+                        <FormLabel>ملاحظات الجلسة</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Enter detailed session notes here. Each note on a new line."
+                            placeholder="أدخل ملاحظات الجلسة التفصيلية هنا. كل ملاحظة في سطر جديد."
                             className="min-h-[250px]"
                             {...field}
                           />
                         </FormControl>
-                         <FormDescription>Separate individual notes or observations with a new line.</FormDescription>
+                         <FormDescription>افصل الملاحظات الفردية أو المشاهدات بسطر جديد.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <Button type="submit" disabled={isLoading} className="w-full">
                     {isLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                     ) : (
-                      <Sparkles className="mr-2 h-4 w-4" />
+                      <Sparkles className="ml-2 h-4 w-4" />
                     )}
-                    Generate Diagnosis
+                    إنشاء التشخيص
                   </Button>
                 </form>
               </Form>
@@ -133,13 +133,13 @@ export default function DiagnosisPage() {
         <div className="lg:col-span-3">
           <Card className="min-h-full">
             <CardHeader>
-              <CardTitle>Diagnostic Hypotheses</CardTitle>
+              <CardTitle>الفرضيات التشخيصية</CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading && (
                 <div className="flex flex-col items-center justify-center h-96">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="mt-4 text-muted-foreground">AI is analyzing the data...</p>
+                  <p className="mt-4 text-muted-foreground">يقوم الذكاء الاصطناعي بتحليل البيانات...</p>
                 </div>
               )}
               {!isLoading && !result && (
@@ -147,7 +147,7 @@ export default function DiagnosisPage() {
                   <div className="p-4 bg-accent/50 rounded-full">
                     <BrainCircuit className="h-10 w-10 text-primary" />
                   </div>
-                  <p className="mt-4 text-muted-foreground">Your AI-generated diagnostic insights will appear here.</p>
+                  <p className="mt-4 text-muted-foreground">ستظهر هنا الرؤى التشخيصية التي تم إنشاؤها بواسطة الذكاء الاصطناعي.</p>
                 </div>
               )}
               {result && (
@@ -158,17 +158,17 @@ export default function DiagnosisPage() {
                         <div className="flex items-center gap-4">
                           <span className="font-semibold text-base">{hypothesis.diagnosis}</span>
                           <Badge variant={hypothesis.confidence > 0.7 ? "default" : "secondary"}>
-                            {`Confidence: ${(hypothesis.confidence * 100).toFixed(0)}%`}
+                            {`الثقة: ${(hypothesis.confidence * 100).toFixed(0)}%`}
                           </Badge>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="space-y-4 px-2">
                         <div>
-                          <h4 className="font-semibold mb-1">Reasoning (DSM-5 Criteria)</h4>
+                          <h4 className="font-semibold mb-1">المنطق (معايير DSM-5)</h4>
                           <p className="text-sm text-muted-foreground">{hypothesis.reasoning}</p>
                         </div>
                         <div>
-                          <h4 className="font-semibold mb-1">Supporting Evidence</h4>
+                          <h4 className="font-semibold mb-1">الأدلة الداعمة</h4>
                           <p className="text-sm text-muted-foreground">{hypothesis.supportingEvidence}</p>
                         </div>
                       </AccordionContent>

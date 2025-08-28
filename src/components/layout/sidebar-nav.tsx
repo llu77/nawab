@@ -8,6 +8,7 @@ import {
   Pill,
   ShieldAlert,
   FileText,
+  UserPlus,
 } from "lucide-react";
 
 import {
@@ -22,12 +23,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/diagnosis", label: "Diagnosis Assistant", icon: BrainCircuit },
-  { href: "/medication", label: "Medication", icon: Pill },
-  { href: "/risk-assessment", label: "Risk Assessment", icon: ShieldAlert },
-  { href: "/summarization", label: "Summarization", icon: FileText },
+  { href: "/", label: "لوحة التحكم", icon: LayoutDashboard },
+  { href: "/diagnosis", label: "مساعد التشخيص", icon: BrainCircuit },
+  { href: "/medication", label: "الأدوية", icon: Pill },
+  { href: "/risk-assessment", label: "تقييم المخاطر", icon: ShieldAlert },
+  { href: "/summarization", label: "التلخيص", icon: FileText },
 ];
+
+const secondaryNavItems = [
+    { href: "/new-patient", label: "إدخال مريض جديد", icon: UserPlus },
+]
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -45,12 +50,23 @@ export function SidebarNav() {
           </svg>
           <div className="flex flex-col">
             <h2 className="text-lg font-headline font-semibold">NawabMD</h2>
-            <p className="text-xs text-muted-foreground">AI Clinical Support</p>
+            <p className="text-xs text-muted-foreground">الدعم السريري بالذكاء الاصطناعي</p>
           </div>
         </div>
       </SidebarHeader>
       <SidebarMenu className="flex-1">
         {navItems.map((item) => (
+          <SidebarMenuItem key={item.href}>
+            <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}>
+              <Link href={item.href}>
+                <item.icon />
+                <span>{item.label}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+         <Separator className="my-2" />
+         {secondaryNavItems.map((item) => (
           <SidebarMenuItem key={item.href}>
             <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}>
               <Link href={item.href}>
@@ -69,8 +85,8 @@ export function SidebarNav() {
             <AvatarFallback>DS</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Dr. Smith</span>
-            <span className="text-xs text-muted-foreground">Psychiatrist</span>
+            <span className="text-sm font-semibold">د. أحمد</span>
+            <span className="text-xs text-muted-foreground">طبيب نفسي</span>
           </div>
         </div>
       </SidebarFooter>

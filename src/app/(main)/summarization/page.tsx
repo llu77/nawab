@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -62,14 +62,14 @@ export default function SummarizationPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="AI Summary Generator"
-        description="Condense session notes and patient data into quick, readable summaries for faster context retrieval."
+        title="مولد الملخصات بالذكاء الاصطناعي"
+        description="تكثيف ملاحظات الجلسة وبيانات المريض في ملخصات سريعة وقابلة للقراءة لاسترجاع السياق بشكل أسرع."
       />
       <div className="grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Source Text</CardTitle>
+              <CardTitle>النص المصدر</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -79,10 +79,10 @@ export default function SummarizationPage() {
                     name="patientData"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Patient Data</FormLabel>
+                        <FormLabel>بيانات المريض</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="e.g., Demographics, diagnosis, medication list, allergies..."
+                            placeholder="مثال: التركيبة السكانية، التشخيص، قائمة الأدوية، الحساسية..."
                             className="min-h-[150px]"
                             {...field}
                           />
@@ -96,10 +96,10 @@ export default function SummarizationPage() {
                     name="sessionNotes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Session Notes</FormLabel>
+                        <FormLabel>ملاحظات الجلسة</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Paste one or more recent session notes here..."
+                            placeholder="الصق ملاحظة جلسة حديثة أو أكثر هنا..."
                             className="min-h-[250px]"
                             {...field}
                           />
@@ -110,11 +110,11 @@ export default function SummarizationPage() {
                   />
                   <Button type="submit" disabled={isLoading} className="w-full">
                     {isLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                     ) : (
-                      <Sparkles className="mr-2 h-4 w-4" />
+                      <Sparkles className="ml-2 h-4 w-4" />
                     )}
-                    Generate Summary
+                    إنشاء ملخص
                   </Button>
                 </form>
               </Form>
@@ -124,13 +124,13 @@ export default function SummarizationPage() {
         <div className="lg:col-span-3">
           <Card className="min-h-full">
             <CardHeader>
-              <CardTitle>Generated Summary</CardTitle>
+              <CardTitle>الملخص المُنشأ</CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading && (
                 <div className="flex flex-col items-center justify-center h-96">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="mt-4 text-muted-foreground">AI is summarizing the text...</p>
+                  <p className="mt-4 text-muted-foreground">يقوم الذكاء الاصطناعي بتلخيص النص...</p>
                 </div>
               )}
               {!isLoading && !result && (
@@ -138,7 +138,7 @@ export default function SummarizationPage() {
                   <div className="p-4 bg-accent/50 rounded-full">
                     <FileText className="h-10 w-10 text-primary" />
                   </div>
-                  <p className="mt-4 text-muted-foreground">The generated summary will appear here.</p>
+                  <p className="mt-4 text-muted-foreground">سيظهر الملخص الذي تم إنشاؤه هنا.</p>
                 </div>
               )}
               {result && (
