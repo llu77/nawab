@@ -12,11 +12,18 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { diagnosePatient } from './diagnosis-assistant';
-import { predictRelapseProbability, type RelapsePredictionInput } from './relapse-prediction';
+import { predictRelapseProbability } from './relapse-prediction';
 import { generateSummary, type SummaryInput } from './ai-summary-generator';
 import { getFirestore } from "firebase-admin/firestore";
 import { initializeFirebase } from '@/lib/firebase';
-import { DiagnosePatientInputSchema, DiagnosePatientOutputSchema, RelapsePredictionOutputSchema, SummaryOutputSchema, type DiagnosePatientInput, type OrchestratorOutput } from './schemas';
+import { 
+    DiagnosePatientOutputSchema, 
+    RelapsePredictionOutputSchema, 
+    SummaryOutputSchema, 
+    type DiagnosePatientInput, 
+    type RelapsePredictionInput,
+    type OrchestratorOutput 
+} from './schemas';
 
 export const OrchestratorInputSchema = z.object({
     patientId: z.string().describe("The unique identifier for the patient."),

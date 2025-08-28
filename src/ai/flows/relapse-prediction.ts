@@ -11,21 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { RelapsePredictionOutputSchema } from './schemas';
-
-// Define the input schema for the relapse prediction flow
-const RelapsePredictionInputSchema = z.object({
-  behavioralPatterns: z
-    .string()
-    .describe(
-      'A detailed description of the patient’s recent behavioral patterns, including changes in mood, sleep, activity levels, social interactions, and adherence to treatment.'
-    ),
-  patientHistory: z.string().describe('The patient’s medical and psychiatric history.'),
-  riskFactors: z.string().describe('Known risk factors specific to the patient.'),
-});
-
-export type RelapsePredictionInput = z.infer<typeof RelapsePredictionInputSchema>;
-export type RelapsePredictionOutput = z.infer<typeof RelapsePredictionOutputSchema>;
+import { RelapsePredictionInputSchema, RelapsePredictionOutputSchema, type RelapsePredictionInput, type RelapsePredictionOutput } from './schemas';
 
 
 // Define the main function that calls the relapse prediction flow

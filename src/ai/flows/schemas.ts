@@ -33,6 +33,18 @@ export type DiagnosePatientOutput = z.infer<typeof DiagnosePatientOutputSchema>;
 // RELAPSE PREDICTION SCHEMAS
 //-////////////////////////////////////////////////////////////////
 
+export const RelapsePredictionInputSchema = z.object({
+  behavioralPatterns: z
+    .string()
+    .describe(
+      'A detailed description of the patient’s recent behavioral patterns, including changes in mood, sleep, activity levels, social interactions, and adherence to treatment.'
+    ),
+  patientHistory: z.string().describe('The patient’s medical and psychiatric history.'),
+  riskFactors: z.string().describe('Known risk factors specific to the patient.'),
+});
+export type RelapsePredictionInput = z.infer<typeof RelapsePredictionInputSchema>;
+
+
 export const RelapsePredictionOutputSchema = z.object({
   relapseProbability: z
     .number()
