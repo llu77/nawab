@@ -69,6 +69,7 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
     <CommandPrimitive onKeyDown={handleKeyDown} className={cn("overflow-visible bg-transparent", className)}>
       <div
         className="group rounded-md border border-input px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+        onClick={() => setOpen(true)}
       >
         <div className="flex flex-wrap gap-1">
           {selected.map((value) => {
@@ -130,8 +131,8 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
                           e.stopPropagation();
                         }}
                         onSelect={() => {
-                          onChange([...selected, option.value]);
                           setInputValue("");
+                          onChange([...selected, option.value]);
                         }}
                         className={"cursor-pointer text-base"}
                       >
