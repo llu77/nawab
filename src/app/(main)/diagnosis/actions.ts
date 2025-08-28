@@ -1,6 +1,8 @@
 "use server";
 
-import { diagnosePatient, type DiagnosePatientInput, type DiagnosePatientOutput } from "@/ai/flows/diagnosis-assistant";
+import { diagnosePatient } from "@/ai/flows/diagnosis-assistant";
+import type { DiagnosePatientInput, DiagnosePatientOutput } from "@/ai/flows/schemas";
+
 
 export async function getDiagnosis(input: DiagnosePatientInput): Promise<{success: true, data: DiagnosePatientOutput} | {success: false, error: string}> {
   try {

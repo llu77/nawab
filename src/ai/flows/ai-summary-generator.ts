@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { SummaryOutputSchema } from './schemas';
 
 const SummaryInputSchema = z.object({
   sessionNotes: z.string().describe('The session notes to summarize.'),
@@ -17,11 +19,6 @@ const SummaryInputSchema = z.object({
 });
 
 export type SummaryInput = z.infer<typeof SummaryInputSchema>;
-
-export const SummaryOutputSchema = z.object({
-  summary: z.string().describe('The generated summary of the session notes and patient data.'),
-});
-
 export type SummaryOutput = z.infer<typeof SummaryOutputSchema>;
 
 export async function generateSummary(input: SummaryInput): Promise<SummaryOutput> {

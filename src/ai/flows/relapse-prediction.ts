@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { RelapsePredictionOutputSchema } from './schemas';
 
 // Define the input schema for the relapse prediction flow
 const RelapsePredictionInputSchema = z.object({
@@ -23,22 +25,8 @@ const RelapsePredictionInputSchema = z.object({
 });
 
 export type RelapsePredictionInput = z.infer<typeof RelapsePredictionInputSchema>;
-
-// Define the output schema for the relapse prediction flow
-export const RelapsePredictionOutputSchema = z.object({
-  relapseProbability: z
-    .number()
-    .describe(
-      'The predicted probability of relapse, expressed as a percentage between 0 and 100.'
-    ),
-  rationale: z
-    .string()
-    .describe(
-      'A detailed explanation of the factors contributing to the relapse prediction, including specific behavioral patterns and risk factors.'
-    ),
-});
-
 export type RelapsePredictionOutput = z.infer<typeof RelapsePredictionOutputSchema>;
+
 
 // Define the main function that calls the relapse prediction flow
 export async function predictRelapseProbability(

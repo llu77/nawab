@@ -1,6 +1,7 @@
 "use server";
 
-import { predictRelapseProbability, type RelapsePredictionInput, type RelapsePredictionOutput } from "@/ai/flows/relapse-prediction";
+import { predictRelapseProbability, type RelapsePredictionInput } from "@/ai/flows/relapse-prediction";
+import type { RelapsePredictionOutput } from "@/ai/flows/schemas";
 
 export async function getRelapsePrediction(input: RelapsePredictionInput): Promise<{success: true, data: RelapsePredictionOutput} | {success: false, error: string}> {
   try {

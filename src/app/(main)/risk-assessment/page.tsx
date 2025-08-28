@@ -21,7 +21,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { getRelapsePrediction } from "./actions";
 import { PageHeader } from "@/components/page-header";
-import type { RelapsePredictionOutput } from "@/ai/flows/relapse-prediction";
+import type { RelapsePredictionOutput } from "@/ai/flows/schemas";
 
 const riskFormSchema = z.object({
   behavioralPatterns: z.string().min(100, "Please provide detailed behavioral patterns (at least 100 characters)."),

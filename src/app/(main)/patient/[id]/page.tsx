@@ -22,7 +22,7 @@ import { PageHeader } from "@/components/page-header";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getPatientData } from "./actions";
-import type { OrchestratorOutput } from "@/ai/flows/orchestrator-agent";
+import type { OrchestratorOutput } from "@/ai/flows/schemas";
 
 // Define a more comprehensive patient data type
 type PatientData = {

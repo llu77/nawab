@@ -26,7 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getDiagnosis } from "./actions";
 import { PageHeader } from "@/components/page-header";
 import { SYMPTOM_CATEGORIES } from "@/lib/symptoms";
-import type { DiagnosePatientOutput } from "@/ai/flows/diagnosis-assistant";
+import type { DiagnosePatientOutput } from "@/ai/flows/schemas";
 
 const diagnosisFormSchema = z.object({
   patientHistory: z.string().min(50, "Please provide a more detailed patient history (at least 50 characters)."),

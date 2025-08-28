@@ -6,30 +6,12 @@
  * @fileOverview An AI-powered tool that analyzes session notes and patient history to provide possible diagnoses.
  *
  * - diagnosePatient - A function that handles the patient diagnosis process.
- * - DiagnosePatientInput - The input type for the diagnosePatient function.
- * - DiagnosePatientOutput - The return type for the diagnosePatient function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { DiagnosePatientInputSchema, DiagnosePatientOutputSchema, type DiagnosePatientInput, type DiagnosePatientOutput } from './schemas';
 
-const DiagnosePatientInputSchema = z.object({
-  sessionNotes: z.array(z.string()).describe('An array of session notes for the patient.'),
-  patientHistory: z.string().describe("The patient's medical history."),
-});
-export type DiagnosePatientInput = z.infer<typeof DiagnosePatientInputSchema>;
-
-const DiagnosisHypothesisSchema = z.object({
-  diagnosis: z.string().describe('The possible diagnosis.'),
-  confidence: z.number().describe('The confidence level of the diagnosis (0-1).'),
-  reasoning: z.string().describe('The reasoning behind the diagnosis based on DSM-5 criteria.'),
-  supportingEvidence: z.string().describe('Supporting evidence from session notes and patient history.'),
-});
-
-export const DiagnosePatientOutputSchema = z.object({
-  diagnosisHypotheses: z.array(DiagnosisHypothesisSchema).describe('An array of possible diagnoses with confidence levels and reasoning.'),
-});
-export type DiagnosePatientOutput = z.infer<typeof DiagnosePatientOutputSchema>;
 
 export async function diagnosePatient(input: DiagnosePatientInput): Promise<DiagnosePatientOutput> {
   return diagnosePatientFlow(input);

@@ -11,11 +11,12 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { diagnosePatient, DiagnosePatientInput, DiagnosePatientOutput, DiagnosePatientOutputSchema } from './diagnosis-assistant';
-import { predictRelapseProbability, RelapsePredictionInput, RelapsePredictionOutput, RelapsePredictionOutputSchema } from './relapse-prediction';
-import { generateSummary, SummaryInput, SummaryOutput, SummaryOutputSchema } from './ai-summary-generator';
+import { diagnosePatient } from './diagnosis-assistant';
+import { predictRelapseProbability, type RelapsePredictionInput } from './relapse-prediction';
+import { generateSummary, type SummaryInput } from './ai-summary-generator';
 import { getFirestore } from "firebase-admin/firestore";
 import { initializeFirebase } from '@/lib/firebase';
+import { DiagnosePatientInputSchema, DiagnosePatientOutputSchema, RelapsePredictionOutputSchema, SummaryOutputSchema, type DiagnosePatientInput, type OrchestratorOutput } from './schemas';
 
 export const OrchestratorInputSchema = z.object({
     patientId: z.string().describe("The unique identifier for the patient."),
@@ -37,7 +38,7 @@ export const OrchestratorOutputSchema = z.object({
     relapsePrediction: RelapsePredictionOutputSchema,
     summary: SummaryOutputSchema,
 });
-export type OrchestratorOutput = z.infer<typeof OrchestratorOutputSchema>;
+
 
 export async function orchestratorAgent(input: OrchestratorInput): Promise<OrchestratorOutput> {
     return orchestratorAgentFlow(input);

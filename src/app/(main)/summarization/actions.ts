@@ -1,6 +1,7 @@
 "use server";
 
-import { generateSummary, type SummaryInput, type SummaryOutput } from "@/ai/flows/ai-summary-generator";
+import { generateSummary } from "@/ai/flows/ai-summary-generator";
+import type { SummaryInput, SummaryOutput } from "@/ai/flows/ai-summary-generator";
 
 export async function createSummary(input: SummaryInput): Promise<{success: true, data: SummaryOutput} | {success: false, error: string}> {
   try {
