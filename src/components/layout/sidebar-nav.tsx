@@ -9,6 +9,7 @@ import {
   ShieldAlert,
   FileText,
   UserPlus,
+  Users,
 } from "lucide-react";
 
 import {
@@ -24,6 +25,7 @@ import { Separator } from "@/components/ui/separator";
 
 const navItems = [
   { href: "/", label: "لوحة التحكم", icon: LayoutDashboard },
+  { href: "/patients", label: "المرضى", icon: Users },
   { href: "/diagnosis", label: "مساعد التشخيص", icon: BrainCircuit },
   { href: "/medication", label: "الأدوية", icon: Pill },
   { href: "/risk-assessment", label: "تقييم المخاطر", icon: ShieldAlert },
@@ -36,6 +38,11 @@ const secondaryNavItems = [
 
 export function SidebarNav() {
   const pathname = usePathname();
+
+  const checkActivePath = (path: string) => {
+    if (path === "/") return pathname === "/";
+    return pathname.startsWith(path);
+  }
 
   return (
     <Sidebar>
@@ -57,7 +64,7 @@ export function SidebarNav() {
       <SidebarMenu className="flex-1">
         {navItems.map((item) => (
           <SidebarMenuItem key={item.href}>
-            <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}>
+            <SidebarMenuButton asChild isActive={checkActivePath(item.href)} tooltip={item.label}>
               <Link href={item.href}>
                 <item.icon />
                 <span>{item.label}</span>

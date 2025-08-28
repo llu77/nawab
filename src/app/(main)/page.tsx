@@ -184,7 +184,11 @@ export default function DashboardPage() {
                     <TableBody>
                       {patients.map((patient) => (
                         <TableRow key={patient.id}>
-                          <TableCell className="font-medium">{patient.name}</TableCell>
+                          <TableCell className="font-medium">
+                            <Link href={`/patient/${patient.id}`} className="hover:underline">
+                              {patient.name}
+                            </Link>
+                          </TableCell>
                           <TableCell>{patient.lastVisit}</TableCell>
                           <TableCell>
                              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
