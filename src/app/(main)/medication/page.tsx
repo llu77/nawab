@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -17,17 +18,18 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { suggestAlternatives } from "./actions";
 import { PageHeader } from "@/components/page-header";
 import type { AlternativeMedicationsOutput } from "@/ai/flows/medication-alternatives";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { MEDICATION_CATEGORIES } from "@/lib/medications";
 
 const medicationFormSchema = z.object({
   patientHistory: z.string().min(20, "Please provide a more detailed patient history."),
   patientGenetics: z.string().optional(),
-  currentMedications: z.string().min(3, "Please list at least one current medication."),
+  currentMedications: z.array(z.string()).min(1, "Please select at least one medication."),
 });
 
 export default function MedicationPage() {
@@ -40,7 +42,7 @@ export default function MedicationPage() {
     defaultValues: {
       patientHistory: "",
       patientGenetics: "",
-      currentMedications: "",
+      currentMedications: [],
     },
   });
 
@@ -51,7 +53,7 @@ export default function MedicationPage() {
     const response = await suggestAlternatives({
       patientHistory: values.patientHistory,
       patientGenetics: values.patientGenetics || "Not provided",
-      currentMedications: values.currentMedications,
+      currentMedications: values.currentMedications.join(', '),
     });
 
     setIsLoading(false);
@@ -66,6 +68,14 @@ export default function MedicationPage() {
       });
     }
   }
+  
+  const medicationOptions = MEDICATION_CATEGORIES.flatMap(category =>
+    category.medications.map(medication => ({
+      value: medication,
+      label: medication,
+      group: category.name,
+    }))
+  );
 
   return (
     <>
@@ -89,7 +99,13 @@ export default function MedicationPage() {
                       <FormItem>
                         <FormLabel>الأدوية الحالية</FormLabel>
                         <FormControl>
-                          <Input placeholder="مثال: Sertraline 50mg, Lorazepam 1mg" {...field} className="text-base" />
+                          <MultiSelect
+                            options={medicationOptions}
+                            selected={field.value}
+                            onChange={field.onChange}
+                            placeholder="اختر الأدوية الحالية..."
+                            className="text-base"
+                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
