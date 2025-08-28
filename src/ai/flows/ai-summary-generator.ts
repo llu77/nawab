@@ -18,7 +18,7 @@ const SummaryInputSchema = z.object({
 
 export type SummaryInput = z.infer<typeof SummaryInputSchema>;
 
-const SummaryOutputSchema = z.object({
+export const SummaryOutputSchema = z.object({
   summary: z.string().describe('The generated summary of the session notes and patient data.'),
 });
 

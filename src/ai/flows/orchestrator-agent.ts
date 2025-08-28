@@ -11,9 +11,9 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { diagnosePatient, DiagnosePatientInput, DiagnosePatientOutput } from './diagnosis-assistant';
-import { predictRelapseProbability, RelapsePredictionInput, RelapsePredictionOutput } from './relapse-prediction';
-import { generateSummary, SummaryInput, SummaryOutput } from './ai-summary-generator';
+import { diagnosePatient, DiagnosePatientInput, DiagnosePatientOutput, DiagnosePatientOutputSchema } from './diagnosis-assistant';
+import { predictRelapseProbability, RelapsePredictionInput, RelapsePredictionOutput, RelapsePredictionOutputSchema } from './relapse-prediction';
+import { generateSummary, SummaryInput, SummaryOutput, SummaryOutputSchema } from './ai-summary-generator';
 import { getFirestore } from "firebase-admin/firestore";
 import { initializeFirebase } from '@/lib/firebase';
 
@@ -33,9 +33,9 @@ export const OrchestratorInputSchema = z.object({
 export type OrchestratorInput = z.infer<typeof OrchestratorInputSchema>;
 
 export const OrchestratorOutputSchema = z.object({
-    diagnosis: DiagnosePatientOutput,
-    relapsePrediction: RelapsePredictionOutput,
-    summary: SummaryOutput,
+    diagnosis: DiagnosePatientOutputSchema,
+    relapsePrediction: RelapsePredictionOutputSchema,
+    summary: SummaryOutputSchema,
 });
 export type OrchestratorOutput = z.infer<typeof OrchestratorOutputSchema>;
 

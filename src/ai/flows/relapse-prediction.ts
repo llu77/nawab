@@ -25,7 +25,7 @@ const RelapsePredictionInputSchema = z.object({
 export type RelapsePredictionInput = z.infer<typeof RelapsePredictionInputSchema>;
 
 // Define the output schema for the relapse prediction flow
-const RelapsePredictionOutputSchema = z.object({
+export const RelapsePredictionOutputSchema = z.object({
   relapseProbability: z
     .number()
     .describe(
