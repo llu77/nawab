@@ -14,6 +14,8 @@ import { z } from 'genkit';
 import { diagnosePatient, DiagnosePatientInput, DiagnosePatientOutput } from './diagnosis-assistant';
 import { predictRelapseProbability, RelapsePredictionInput, RelapsePredictionOutput } from './relapse-prediction';
 import { generateSummary, SummaryInput, SummaryOutput } from './ai-summary-generator';
+import { getFirestore } from "firebase-admin/firestore";
+import { initializeFirebase } from '@/lib/firebase';
 
 export const OrchestratorInputSchema = z.object({
     patientId: z.string().describe("The unique identifier for the patient."),
@@ -41,6 +43,11 @@ export async function orchestratorAgent(input: OrchestratorInput): Promise<Orche
     return orchestratorAgentFlow(input);
 }
 
+// Ensure Firebase is initialized
+initializeFirebase();
+const db = getFirestore();
+
+
 const orchestratorAgentFlow = ai.defineFlow(
   {
     name: 'orchestratorAgentFlow',
@@ -50,7 +57,6 @@ const orchestratorAgentFlow = ai.defineFlow(
   async (input) => {
     console.log(`Orchestrator agent started for patient: ${input.patientId}`);
     
-    // Combine all available information into a rich context for the agents
     let comprehensiveHistory = `Patient Name: ${input.name}, Age: ${input.age}, Gender: ${input.gender}.\n`;
     comprehensiveHistory += `Brief History: ${input.patientHistory}\n`;
     comprehensiveHistory += `Primary Symptoms Reported: ${input.symptoms.join(', ')}.\n`;
@@ -65,7 +71,6 @@ const orchestratorAgentFlow = ai.defineFlow(
         comprehensiveHistory += `Family History of Mental Illness: Yes. Details: ${input.familyHistoryDetails || 'Not specified'}.\n`;
     }
     
-    // Prepare inputs for the sub-agents
     const diagnosisInput: DiagnosePatientInput = {
         sessionNotes: [`Initial intake notes for ${input.name}, age ${input.age}.`],
         patientHistory: comprehensiveHistory,
@@ -82,20 +87,38 @@ const orchestratorAgentFlow = ai.defineFlow(
         patientData: comprehensiveHistory,
     };
 
-    // Run agents concurrently
     console.log("Starting concurrent analysis for Diagnosis, Relapse Prediction, and Summarization...");
     const [diagnosis, relapsePrediction, summary] = await Promise.all([
       diagnosePatient(diagnosisInput),
       predictRelapseProbability(relapsePredictionInput),
       generateSummary(summaryInput),
     ]);
+    
+    const results = {
+        diagnosis,
+        relapsePrediction,
+        summary,
+    };
+
+    // Save results to Firestore
+    try {
+        const patientDocRef = db.collection('patients').doc(input.patientId);
+        const patientDataToSave = {
+            ...input,
+            registrationDate: new Date().toISOString().split('T')[0],
+            aiResults: results
+        };
+
+        await patientDocRef.set(patientDataToSave);
+        console.log(`Successfully saved AI results to Firestore for patient: ${input.patientId}`);
+    } catch (error) {
+        console.error(`Failed to save AI results to Firestore for patient ${input.patientId}:`, error);
+        // Optionally, re-throw the error or handle it as needed
+        throw new Error(`Failed to save data to Firestore: ${error instanceof Error ? error.message : String(error)}`);
+    }
 
     console.log(`Orchestrator agent finished for patient: ${input.patientId}`);
 
-    return {
-      diagnosis,
-      relapsePrediction,
-      summary,
-    };
+    return results;
   }
 );
