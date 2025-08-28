@@ -40,17 +40,17 @@ const prompt = ai.definePrompt({
   output: {schema: DiagnosePatientOutputSchema},
   prompt: `You are an AI-powered diagnostic assistant for mental health professionals.
 
-  Your task is to analyze the provided session notes and patient history to generate possible diagnoses, along with confidence levels and transparent reasoning paths based on DSM-5 criteria.
+  Your task is to analyze the provided session notes, patient history, and reported symptoms to generate possible diagnoses, along with confidence levels and transparent reasoning paths based on DSM-5 criteria.
 
   Session Notes:
   {{#each sessionNotes}}
   - {{{this}}}
   {{/each}}
 
-  Patient History:
+  Patient History & Symptoms:
   {{{patientHistory}}}
 
-  Provide a list of possible diagnoses with confidence scores and supporting evidence from the session notes and patient history. Explain your reasoning based on DSM-5 criteria for each diagnosis.
+  Provide a list of possible diagnoses with confidence scores and supporting evidence. Explain your reasoning based on DSM-5 criteria for each diagnosis. The patient history also contains the key symptoms reported, use them as a primary guide for your analysis.
 
   Format your response as a JSON object with a 'diagnosisHypotheses' array. Each element in the array should have the following fields:
   - 'diagnosis': The possible diagnosis.
