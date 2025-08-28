@@ -53,8 +53,10 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
     }
   }, [onChange, selected]);
 
+  const selectables = options.filter(option => !selected.includes(option.value));
+
   const groupedOptions = React.useMemo(() => {
-    return options.reduce((acc, option) => {
+    return selectables.reduce((acc, option) => {
       const group = option.group || "General";
       if (!acc[group]) {
         acc[group] = [];
@@ -62,14 +64,13 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
       acc[group].push(option);
       return acc;
     }, {} as Record<string, Option[]>);
-  }, [options]);
+  }, [selectables]);
 
 
   return (
     <CommandPrimitive onKeyDown={handleKeyDown} className={cn("overflow-visible bg-transparent", className)}>
       <div
         className="group rounded-md border border-input px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
-        onClick={() => setOpen(true)}
       >
         <div className="flex flex-wrap gap-1">
           {selected.map((value) => {
@@ -118,12 +119,10 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
                     اكتب للبحث...
                 </CommandItem>
               )}
-              {Object.entries(groupedOptions).map(([group, options]) => {
-                const filteredOptions = options.filter(option => !selected.includes(option.value));
-                if (filteredOptions.length === 0) return null;
+              {Object.entries(groupedOptions).map(([group, groupOptions]) => {
                 return (
                   <CommandGroup key={group} heading={<span className="text-base font-bold text-foreground">{group}</span>} className="p-2">
-                    {filteredOptions.map((option) => (
+                    {groupOptions.map((option) => (
                       <CommandItem
                         key={option.value}
                         onMouseDown={(e) => {
