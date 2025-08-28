@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -20,14 +21,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { useToast } from "@/hooks/use-toast";
 import { getDiagnosis } from "./actions";
 import { PageHeader } from "@/components/page-header";
+import { SYMPTOM_CATEGORIES } from "@/lib/symptoms";
 import type { DiagnosePatientOutput } from "@/ai/flows/diagnosis-assistant";
 
 const diagnosisFormSchema = z.object({
   patientHistory: z.string().min(50, "Please provide a more detailed patient history (at least 50 characters)."),
   sessionNotes: z.string().min(100, "Please provide more detailed session notes (at least 100 characters)."),
+  symptoms: z.array(z.string()).min(3, "Please select at least 3 symptoms.").max(10, "Please select no more than 10 symptoms."),
 });
 
 export default function DiagnosisPage() {
@@ -40,6 +44,7 @@ export default function DiagnosisPage() {
     defaultValues: {
       patientHistory: "",
       sessionNotes: "",
+      symptoms: [],
     },
   });
 
@@ -49,8 +54,12 @@ export default function DiagnosisPage() {
 
     const sessionNotesArray = values.sessionNotes.split('\n').filter(note => note.trim() !== '');
     
+    // For now, we will add the selected symptoms to the patient history.
+    // In the future, a dedicated agent will handle this.
+    const enrichedPatientHistory = `${values.patientHistory}\n\nSelected Symptoms:\n- ${values.symptoms.join('\n- ')}`;
+
     const response = await getDiagnosis({
-        patientHistory: values.patientHistory,
+        patientHistory: enrichedPatientHistory,
         sessionNotes: sessionNotesArray
     });
 
@@ -66,6 +75,14 @@ export default function DiagnosisPage() {
       });
     }
   }
+  
+  const symptomOptions = SYMPTOM_CATEGORIES.flatMap(category => 
+    category.symptoms.map(symptom => ({
+      value: symptom,
+      label: symptom,
+      group: category.name,
+    }))
+  );
 
   return (
     <>
@@ -95,6 +112,26 @@ export default function DiagnosisPage() {
                             {...field}
                           />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="symptoms"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الأعراض</FormLabel>
+                        <FormControl>
+                          <MultiSelect
+                            options={symptomOptions}
+                            selected={field.value}
+                            onChange={field.onChange}
+                            placeholder="اختر من 3 إلى 10 أعراض..."
+                            className="text-base"
+                           />
+                        </FormControl>
+                         <FormDescription>اختر من 3 إلى 10 أعراض لوصف حالة المريض.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -183,3 +220,4 @@ export default function DiagnosisPage() {
     </>
   );
 }
+
