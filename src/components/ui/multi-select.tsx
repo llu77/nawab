@@ -111,7 +111,7 @@ export function MultiSelect({ options, selected, onChange, placeholder, classNam
             <CommandList className="max-h-[300px] overflow-y-auto">
               {inputValue.length > 0 && (
                  <CommandItem
-                    onSelect={() => {}}
+                    disabled
                     className="flex justify-center py-2 text-xs text-muted-foreground"
                 >
                     اكتب للبحث عن الأعراض...
