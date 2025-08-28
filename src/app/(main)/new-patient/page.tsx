@@ -41,7 +41,7 @@ export default function NewPatientPage() {
     resolver: zodResolver(newPatientFormSchema),
     defaultValues: {
       name: "",
-      age: undefined,
+      age: "" as any,
       patientHistory: "",
       symptoms: [],
     },
