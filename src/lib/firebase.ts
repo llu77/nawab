@@ -1,21 +1,29 @@
 import { initializeApp, getApps, App } from "firebase-admin/app";
 import { credential } from "firebase-admin";
 
-// Ensure you have the serviceAccountKey.json file at your project root
-// and your GOOGLE_APPLICATION_CREDENTIALS environment variable is set correctly.
-// For local development, you might use a .env.local file.
-
-const serviceAccount = process.env.GOOGLE_APPLICATION_CREDENTIALS
-  ? require(process.cwd() + "/" + process.env.GOOGLE_APPLICATION_CREDENTIALS)
-  : {};
+let app: App;
 
 export function initializeFirebase(): App {
+  if (app) {
+    return app;
+  }
+  
   const apps = getApps();
   if (apps.length) {
-    return apps[0];
+    app = apps[0];
+    return app;
   }
 
-  return initializeApp({
-    credential: credential.cert(serviceAccount),
+  // In a deployed environment, GOOGLE_APPLICATION_CREDENTIALS will be set.
+  // For local development, you can set FIREBASE_CREDENTIALS in .env.local
+  // to the JSON string of your service account key.
+  const serviceAccount = process.env.FIREBASE_CREDENTIALS 
+    ? JSON.parse(process.env.FIREBASE_CREDENTIALS) 
+    : undefined;
+
+  app = initializeApp({
+    credential: serviceAccount ? credential.cert(serviceAccount) : credential.applicationDefault(),
   });
+
+  return app;
 }

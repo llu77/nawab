@@ -43,7 +43,7 @@ export async function orchestratorAgent(input: OrchestratorInput): Promise<Orche
     return orchestratorAgentFlow(input);
 }
 
-// Ensure Firebase is initialized
+// Initialize Firebase and Firestore
 initializeFirebase();
 const db = getFirestore();
 
