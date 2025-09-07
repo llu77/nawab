@@ -1,66 +1,66 @@
+
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow for suggesting alternative medications based on patient history, genetics, and current prescriptions.
+ * @fileOverview This file defines a Genkit flow for suggesting alternative medications and providing a comprehensive pharmacy review.
  *
- * - getAlternativeMedications - A function that suggests alternative medications.
- * - AlternativeMedicationsInput - The input type for the getAlternativeMedications function.
- * - AlternativeMedicationsOutput - The return type for the getAlternativeMedications function.
+ * - getMedicationAnalysis - A function that provides a full clinical pharmacist review.
+ * - MedicationAnalysisInput - The input type for the getMedicationAnalysis function.
+ * - MedicationAnalysisOutput - The return type for the getMedicationAnalysis function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { MedicationAnalysisInputSchema, MedicationAnalysisOutputSchema, type MedicationAnalysisInput, type MedicationAnalysisOutput } from './schemas';
 
-const AlternativeMedicationsInputSchema = z.object({
-  patientHistory: z
-    .string()
-    .describe('The patient medical history.'),
-  patientGenetics: z
-    .string()
-    .describe('The patient genetic information.'),
-  currentMedications: z
-    .string()
-    .describe('The patient current prescriptions.'),
-});
-export type AlternativeMedicationsInput = z.infer<
-  typeof AlternativeMedicationsInputSchema
->;
 
-const AlternativeMedicationsOutputSchema = z.object({
-  alternatives: z
-    .string()
-    .describe('Suggested alternative medications based on the provided information.'),
-});
-export type AlternativeMedicationsOutput = z.infer<
-  typeof AlternativeMedicationsOutputSchema
->;
-
-export async function getAlternativeMedications(
-  input: AlternativeMedicationsInput
-): Promise<AlternativeMedicationsOutput> {
-  return alternativeMedicationsFlow(input);
+export async function getMedicationAnalysis(
+  input: MedicationAnalysisInput
+): Promise<MedicationAnalysisOutput> {
+  return medicationAnalysisFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'alternativeMedicationsPrompt',
-  input: {schema: AlternativeMedicationsInputSchema},
-  output: {schema: AlternativeMedicationsOutputSchema},
-  prompt: `You are a clinical pharmacist, and you are tasked to analyze patient data and suggest alternative medications.
+  name: 'medicationAnalysisPrompt',
+  input: {schema: MedicationAnalysisInputSchema},
+  output: {schema: MedicationAnalysisOutputSchema},
+  prompt: `As a clinical pharmacist specializing in psychiatric medications, your task is to conduct a thorough medication review and provide actionable recommendations.
 
-  Patient History: {{{patientHistory}}}
-  Patient Genetics: {{{patientGenetics}}}
-  Current Medications: {{{currentMedications}}}
+  **Patient Information:**
+  -   **History:** {{{patientHistory}}}
+  -   **Pharmacogenomics (if available):** {{{patientGenetics}}}
+  -   **Current Medications:** {{{currentMedications}}}
 
-  Based on this information, suggest alternative medications.
-  Give a detailed reason why each medication is being suggested.
+  **Required Analysis:**
+
+  1.  **Medication Review:**
+      -   Analyze the current medications for appropriateness, efficacy, and safety.
+      -   Suggest specific adjustments (e.g., dose changes, discontinuation).
+      -   Identify any contraindicated medications based on the patient's profile.
+
+  2.  **Drug Interactions:**
+      -   Analyze potential interactions between the listed medications.
+      -   For each significant interaction, describe its clinical significance and provide a clear recommendation. Classify severity as 'minor', 'moderate', 'major', or 'contraindicated'.
+
+  3.  **Safe Alternatives:**
+      -   Based on the entire clinical picture, recommend safe and effective alternative medications.
+      -   Provide a strong rationale for each recommendation, linking it to the patient's history, genetics, or current medication issues.
+
+  4.  **Monitoring Plan:**
+      -   Propose a plan for monitoring the patient's response to the recommended medication therapy, including necessary lab tests and clinical observations.
+
+  5.  **Pharmacist's Notes:**
+      -   Add any other critical notes or clinical pearls that the treating physician should be aware of.
+
+  The output MUST be in a valid JSON format that strictly adheres to the 'MedicationAnalysisOutputSchema'.
   `,
 });
 
-const alternativeMedicationsFlow = ai.defineFlow(
+const medicationAnalysisFlow = ai.defineFlow(
   {
-    name: 'alternativeMedicationsFlow',
-    inputSchema: AlternativeMedicationsInputSchema,
-    outputSchema: AlternativeMedicationsOutputSchema,
+    name: 'medicationAnalysisFlow',
+    inputSchema: MedicationAnalysisInputSchema,
+    outputSchema: MedicationAnalysisOutputSchema,
   },
   async input => {
     const {output} = await prompt(input);

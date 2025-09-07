@@ -1,3 +1,4 @@
+
 import { z } from 'genkit';
 
 /**
@@ -63,11 +64,75 @@ export type RelapsePredictionOutput = z.infer<typeof RelapsePredictionOutputSche
 //-////////////////////////////////////////////////////////////////
 // AI SUMMARY GENERATOR SCHEMAS
 //-////////////////////////////////////////////////////////////////
+export const SummaryInputSchema = z.object({
+  sessionNotes: z.string().describe('The session notes to summarize.'),
+  patientData: z.string().describe('The patient data to summarize.'),
+});
+export type SummaryInput = z.infer<typeof SummaryInputSchema>;
+
+const CriticalAlertSchema = z.object({
+    type: z.enum(["drug_interaction", "clinical", "safety"]).describe("The category of the alert."),
+    message: z.string().describe("A concise description of the alert."),
+    urgency: z.enum(["routine", "urgent", "stat"]).describe("The urgency level of the alert."),
+});
 
 export const SummaryOutputSchema = z.object({
-  summary: z.string().describe('The generated summary of the session notes and patient data.'),
+  briefing: z.string().describe("The executive summary briefing (5-15 lines)."),
+  keyPoints: z.array(z.string()).describe("A list of the most important key points."),
+  criticalAlerts: z.array(CriticalAlertSchema).describe("A list of critical alerts requiring attention."),
+  suggestedQuestions: z.array(z.string()).describe("A list of suggested questions to ask the patient during the next visit."),
+  pendingDecisions: z.array(z.string()).describe("A list of pending clinical decisions that need to be made."),
 });
 export type SummaryOutput = z.infer<typeof SummaryOutputSchema>;
+
+
+
+//-////////////////////////////////////////////////////////////////
+// MEDICATION ANALYSIS (CLINICAL PHARMACIST) SCHEMAS
+//-////////////////////////////////////////////////////////////////
+
+export const MedicationAnalysisInputSchema = z.object({
+  patientHistory: z.string().describe("The patient's medical history, including diagnoses and comorbidities."),
+  patientGenetics: z.string().describe("Pharmacogenomic data, if available (e.g., CYP2D6 status)."),
+  currentMedications: z.string().describe("A comma-separated list of the patient's current medications, including dosage."),
+});
+export type MedicationAnalysisInput = z.infer<typeof MedicationAnalysisInputSchema>;
+
+const MedicationAdjustmentSchema = z.object({
+  medication: z.string().describe("The medication to be adjusted."),
+  recommendation: z.string().describe("The recommended adjustment (e.g., 'Increase dose to 20mg', 'Taper and discontinue')."),
+  rationale: z.string().describe("The clinical reasoning for the recommendation."),
+});
+
+const DrugInteractionSchema = z.object({
+  drug1: z.string().describe("The first drug in the interaction."),
+  drug2: z.string().describe("The second drug in the interaction."),
+  severity: z.enum(["minor", "moderate", "major", "contraindicated"]).describe("The severity of the interaction."),
+  clinicalSignificance: z.string().describe("The clinical significance and potential effect of the interaction."),
+  recommendation: z.string().describe("The recommended action to manage the interaction."),
+});
+
+const MedicationAlternativeSchema = z.object({
+  medication: z.string().describe("The suggested alternative medication."),
+  rationale: z.string().describe("The reason for suggesting this alternative (e.g., 'better side effect profile', 'targets specific symptoms')."),
+});
+
+const MonitoringParameterSchema = z.object({
+    parameter: z.string().describe("The parameter to monitor (e.g., 'Blood Pressure', 'Serum Creatinine', 'PHQ-9 Score')."),
+    frequency: z.string().describe("How often to monitor the parameter (e.g., 'Weekly for first 4 weeks', 'At baseline and 3 months').")
+});
+
+export const MedicationAnalysisOutputSchema = z.object({
+  medicationReview: z.object({
+    adjustments: z.array(MedicationAdjustmentSchema).describe("Recommended adjustments to current medications."),
+    contraindicated: z.array(z.string()).describe("Medications that are contraindicated for this patient."),
+  }).describe("A review of the patient's current medication regimen."),
+  drugInteractions: z.array(DrugInteractionSchema).describe("A list of potential drug-drug interactions."),
+  alternatives: z.array(MedicationAlternativeSchema).describe("Suggested alternative medications."),
+  monitoringPlan: z.array(MonitoringParameterSchema).describe("A plan for monitoring the medication therapy."),
+  pharmacistNotes: z.string().describe("General notes and clinical pearls from the pharmacist."),
+});
+export type MedicationAnalysisOutput = z.infer<typeof MedicationAnalysisOutputSchema>;
 
 
 //-////////////////////////////////////////////////////////////////

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Sparkles, Pill } from "lucide-react";
+import { Loader2, Sparkles, Pill, AlertTriangle, FlaskConical, Stethoscope } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,9 +22,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { suggestAlternatives } from "./actions";
 import { PageHeader } from "@/components/page-header";
-import type { AlternativeMedicationsOutput } from "@/ai/flows/medication-alternatives";
+import type { MedicationAnalysisOutput } from "@/ai/flows/schemas";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { MEDICATION_CATEGORIES } from "@/lib/medications";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const medicationFormSchema = z.object({
   patientHistory: z.string().min(20, "Please provide a more detailed patient history."),
@@ -34,7 +37,7 @@ const medicationFormSchema = z.object({
 
 export default function MedicationPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<AlternativeMedicationsOutput | null>(null);
+  const [result, setResult] = useState<MedicationAnalysisOutput | null>(null);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof medicationFormSchema>>({
@@ -77,11 +80,23 @@ export default function MedicationPage() {
     }))
   );
 
+  const getInteractionSeverityBadge = (severity: string) => {
+    switch (severity) {
+      case "major":
+      case "contraindicated":
+        return "destructive";
+      case "moderate":
+        return "secondary";
+      default:
+        return "outline";
+    }
+  }
+
   return (
     <>
       <PageHeader
         title="أداة الأدوية الشخصية"
-        description="اقتراح أدوية بديلة مع مراعاة تاريخ المريض والجينات والوصفات الطبية الحالية."
+        description="مراجعة شاملة للأدوية، تحليل التفاعلات، واقتراح بدائل آمنة بناءً على ملف المريض."
       />
       <div className="grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-2">
@@ -154,7 +169,7 @@ export default function MedicationPage() {
                     ) : (
                       <Sparkles className="ml-2 h-5 w-5" />
                     )}
-                    اقتراح البدائل
+                    تحليل الأدوية
                   </Button>
                 </form>
               </Form>
@@ -164,13 +179,13 @@ export default function MedicationPage() {
         <div className="lg:col-span-3">
           <Card className="min-h-full">
             <CardHeader>
-              <CardTitle>الأدوية البديلة المقترحة</CardTitle>
+              <CardTitle>مراجعة الصيدلي الإكلينيكي</CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading && (
                 <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
                   <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                  <p className="mt-4 text-muted-foreground text-lg">يقوم الذكاء الاصطناعي بالبحث عن بدائل...</p>
+                  <p className="mt-4 text-muted-foreground text-lg">يقوم الذكاء الاصطناعي بتحليل الأدوية...</p>
                 </div>
               )}
               {!isLoading && !result && (
@@ -178,13 +193,108 @@ export default function MedicationPage() {
                   <div className="p-5 bg-accent/50 rounded-full">
                     <Pill className="h-12 w-12 text-primary" />
                   </div>
-                  <p className="mt-6 text-lg text-muted-foreground max-w-sm">ستظهر بدائل الأدوية المقترحة هنا.</p>
+                  <p className="mt-6 text-lg text-muted-foreground max-w-sm">ستظهر هنا مراجعة الأدوية والبدائل المقترحة.</p>
                 </div>
               )}
               {result && (
-                <div className="prose prose-base max-w-none text-foreground prose-headings:text-foreground prose-strong:text-foreground">
-                  <pre className="whitespace-pre-wrap font-body text-base bg-muted/50 p-4 rounded-md">{result.alternatives}</pre>
-                </div>
+                <Accordion type="multiple" defaultValue={["item-1", "item-2", "item-3"]} className="w-full space-y-4">
+                  
+                  <Card>
+                    <AccordionItem value="item-1" className="border-0">
+                      <AccordionTrigger className="p-4 text-lg font-semibold">
+                        <div className="flex items-center gap-3">
+                          <AlertTriangle className="h-6 w-6 text-yellow-500" />
+                          <span>التفاعلات الدوائية المحتملة</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        {result.drugInteractions.length > 0 ? (
+                          <div className="space-y-4">
+                            {result.drugInteractions.map((interaction, index) => (
+                              <div key={index} className="p-3 bg-muted/50 rounded-md">
+                                <div className="flex justify-between items-center">
+                                  <p className="font-semibold text-base">
+                                    {interaction.drug1} + {interaction.drug2}
+                                  </p>
+                                  <Badge variant={getInteractionSeverityBadge(interaction.severity)}>{interaction.severity}</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1"><strong className="text-foreground">الأهمية السريرية:</strong> {interaction.clinicalSignificance}</p>
+                                <p className="text-sm text-muted-foreground mt-1"><strong className="text-foreground">التوصية:</strong> {interaction.recommendation}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : <p className="text-muted-foreground">لم يتم الكشف عن أي تفاعلات دوائية كبيرة.</p>}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Card>
+                  
+                  <Card>
+                    <AccordionItem value="item-2" className="border-0">
+                      <AccordionTrigger className="p-4 text-lg font-semibold">
+                        <div className="flex items-center gap-3">
+                          <Pill className="h-6 w-6 text-blue-500" />
+                          <span>البدائل الدوائية المقترحة</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                         {result.alternatives.length > 0 ? (
+                          <div className="space-y-4">
+                            {result.alternatives.map((alt, index) => (
+                              <div key={index} className="p-3 bg-muted/50 rounded-md">
+                                <p className="font-semibold text-base">{alt.medication}</p>
+                                <p className="text-sm text-muted-foreground mt-1">{alt.rationale}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : <p className="text-muted-foreground">لا توجد بدائل مقترحة حالياً.</p>}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Card>
+
+                  <Card>
+                    <AccordionItem value="item-3" className="border-0">
+                       <AccordionTrigger className="p-4 text-lg font-semibold">
+                        <div className="flex items-center gap-3">
+                          <FlaskConical className="h-6 w-6 text-green-500" />
+                           <span>خطة المراقبة والتعديلات</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4 space-y-4">
+                          <div>
+                            <h4 className="font-semibold text-base mb-2 flex items-center gap-2"><Stethoscope/> تعديلات الجرعة المقترحة</h4>
+                            {result.medicationReview.adjustments.length > 0 ? (
+                              <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                                {result.medicationReview.adjustments.map((adj, i) => (
+                                  <li key={i}><strong>{adj.medication}:</strong> {adj.recommendation} ({adj.rationale})</li>
+                                ))}
+                              </ul>
+                            ) : <p className="text-muted-foreground">لا توجد تعديلات مقترحة للجرعات الحالية.</p>}
+                          </div>
+                          <Separator/>
+                          <div>
+                            <h4 className="font-semibold text-base mb-2 flex items-center gap-2"><FlaskConical/> المراقبة السريرية والمخبرية</h4>
+                            {result.monitoringPlan.length > 0 ? (
+                              <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                                {result.monitoringPlan.map((plan, i) => (
+                                  <li key={i}><strong>{plan.parameter}:</strong> {plan.frequency}</li>
+                                ))}
+                              </ul>
+                            ) : <p className="text-muted-foreground">لا توجد خطة مراقبة محددة مطلوبة.</p>}
+                          </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Card>
+
+                   <Card>
+                    <AccordionItem value="item-4" className="border-0">
+                       <AccordionTrigger className="p-4 text-lg font-semibold">ملاحظات الصيدلي</AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <p className="text-base text-muted-foreground whitespace-pre-wrap">{result.pharmacistNotes || "لا توجد ملاحظات إضافية."}</p>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Card>
+
+                </Accordion>
               )}
             </CardContent>
           </Card>

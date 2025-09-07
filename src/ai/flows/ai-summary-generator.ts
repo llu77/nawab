@@ -11,14 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { SummaryOutputSchema, type SummaryOutput } from './schemas';
-
-const SummaryInputSchema = z.object({
-  sessionNotes: z.string().describe('The session notes to summarize.'),
-  patientData: z.string().describe('The patient data to summarize.'),
-});
-
-export type SummaryInput = z.infer<typeof SummaryInputSchema>;
+import { SummaryInputSchema, SummaryOutputSchema, type SummaryInput, type SummaryOutput } from './schemas';
 
 
 export async function generateSummary(input: SummaryInput): Promise<SummaryOutput> {
@@ -29,15 +22,26 @@ const prompt = ai.definePrompt({
   name: 'aiSummaryGeneratorPrompt',
   input: {schema: SummaryInputSchema},
   output: {schema: SummaryOutputSchema},
-  prompt: `You are an AI assistant designed to help mental health professionals by summarizing session notes and patient data into quick, readable summaries.
+  prompt: `As a professional medical assistant, your task is to create a comprehensive executive summary based on the provided clinical data. The summary should be concise (5-15 lines) yet cover all critical aspects for quick clinical review.
 
-  Summarize the following session notes and patient data:
+  Source Data:
 
-  Session Notes: {{{sessionNotes}}}
+  Session Notes:
+  {{{sessionNotes}}}
 
-  Patient Data: {{{patientData}}}
+  Patient Data:
+  {{{patientData}}}
 
-  Provide a concise and informative summary that captures the key information.`,
+  **Instructions:**
+
+  1.  **Executive Briefing:** Write a professional medical summary of 5-15 lines covering the patient's core complaint, key symptoms, current diagnosis, and treatment plan.
+  2.  **Key Points:** Extract the most critical pieces of information a clinician needs to know at a glance.
+  3.  **Critical Alerts:** Identify any urgent issues, such as severe drug interactions, safety risks, or critical lab values.
+  4.  **Diagnosis & Treatment:** Clearly state the primary diagnosis and the core components of the treatment plan.
+  5.  **Actionable Items:** Formulate suggested questions for the patient and list any pending clinical decisions.
+
+  The output MUST be in a valid JSON format that strictly adheres to the 'SummaryOutputSchema'.
+  `,
 });
 
 const aiSummaryGeneratorFlow = ai.defineFlow(

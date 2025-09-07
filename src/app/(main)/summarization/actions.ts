@@ -2,7 +2,7 @@
 "use server";
 
 import { generateSummary } from "@/ai/flows/ai-summary-generator";
-import type { SummaryInput, SummaryOutput } from "@/ai/flows/ai-summary-generator";
+import type { SummaryInput, SummaryOutput } from "@/ai/flows/schemas";
 
 export async function createSummary(input: SummaryInput): Promise<{success: true, data: SummaryOutput} | {success: false, error: string}> {
   try {

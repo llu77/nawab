@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Sparkles, FileText } from "lucide-react";
+import { Loader2, Sparkles, FileText, Lightbulb, AlertTriangle, CheckSquare } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,11 +17,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { createSummary } from "./actions";
 import { PageHeader } from "@/components/page-header";
-import type { SummaryOutput } from "@/ai/flows/ai-summary-generator";
+import type { SummaryOutput } from "@/ai/flows/schemas";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const summaryFormSchema = z.object({
   patientData: z.string().min(50, "Please provide more detailed patient data (at least 50 characters)."),
@@ -60,11 +62,21 @@ export default function SummarizationPage() {
     }
   }
 
+  const getAlertBadgeVariant = (urgency: string) => {
+    switch(urgency) {
+      case 'stat':
+      case 'urgent':
+        return 'destructive';
+      default:
+        return 'secondary';
+    }
+  }
+
   return (
     <>
       <PageHeader
-        title="مولد الملخصات بالذكاء الاصطناعي"
-        description="تكثيف ملاحظات الجلسة وبيانات المريض في ملخصات سريعة وقابلة للقراءة لاسترجاع السياق بشكل أسرع."
+        title="مولد الملخصات التنفيذية"
+        description="إنشاء ملخصات سريرية شاملة وقابلة للتنفيذ للمراجعة السريعة واتخاذ القرار."
       />
       <div className="grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-2">
@@ -115,7 +127,7 @@ export default function SummarizationPage() {
                     ) : (
                       <Sparkles className="ml-2 h-5 w-5" />
                     )}
-                    إنشاء ملخص
+                    إنشاء ملخص تنفيذي
                   </Button>
                 </form>
               </Form>
@@ -125,7 +137,7 @@ export default function SummarizationPage() {
         <div className="lg:col-span-3">
           <Card className="min-h-full">
             <CardHeader>
-              <CardTitle>الملخص المُنشأ</CardTitle>
+              <CardTitle>الملخص التنفيذي</CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading && (
@@ -139,12 +151,69 @@ export default function SummarizationPage() {
                   <div className="p-5 bg-accent/50 rounded-full">
                     <FileText className="h-12 w-12 text-primary" />
                   </div>
-                   <p className="mt-6 text-lg text-muted-foreground max-w-sm">سيظهر الملخص الذي تم إنشاؤه هنا.</p>
+                   <p className="mt-6 text-lg text-muted-foreground max-w-sm">سيظهر الملخص التنفيذي الذي تم إنشاؤه هنا.</p>
                 </div>
               )}
               {result && (
-                 <div className="prose prose-lg max-w-none text-foreground prose-p:text-foreground prose-headings:text-foreground prose-strong:text-foreground">
-                  <p>{result.summary}</p>
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-xl">موجز الحالة</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-base text-muted-foreground">{result.briefing}</p>
+                        </CardContent>
+                    </Card>
+
+                    {result.criticalAlerts.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-xl flex items-center gap-2 text-destructive"><AlertTriangle/> تنبيهات حرجة</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                                {result.criticalAlerts.map((alert, index) => (
+                                    <div key={index} className="flex items-start gap-3 p-2 bg-destructive/10 rounded-md">
+                                        <Badge variant={getAlertBadgeVariant(alert.urgency)}>{alert.urgency}</Badge>
+                                        <p className="text-sm text-destructive-foreground font-medium">{alert.message}</p>
+                                    </div>
+                                ))}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-xl flex items-center gap-2"><CheckSquare/> نقاط رئيسية</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="list-disc pl-5 space-y-2 text-base text-muted-foreground">
+                                    {result.keyPoints.map((point, index) => <li key={index}>{point}</li>)}
+                                </ul>
+                            </CardContent>
+                        </Card>
+                         <Card>
+                            <CardHeader>
+                                <CardTitle className="text-xl flex items-center gap-2"><Lightbulb/> توصيات عملية</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <h4 className="font-semibold mb-2">أسئلة مقترحة للمريض:</h4>
+                                    <ul className="list-decimal pl-5 space-y-1 text-sm text-muted-foreground">
+                                        {result.suggestedQuestions.map((q, index) => <li key={index}>{q}</li>)}
+                                    </ul>
+                                </div>
+                                <Separator />
+                                 <div>
+                                    <h4 className="font-semibold mb-2">قرارات معلقة:</h4>
+                                    <ul className="list-decimal pl-5 space-y-1 text-sm text-muted-foreground">
+                                        {result.pendingDecisions.map((d, index) => <li key={index}>{d}</li>)}
+                                    </ul>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
                 </div>
               )}
             </CardContent>
