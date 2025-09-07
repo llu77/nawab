@@ -1,3 +1,4 @@
+
 // utils/id-generator.ts
 
 /**
@@ -13,3 +14,5 @@ export function generatePatientId(): string {
 
   return `${randomLetters}-${randomNumbers}`;
 }
+
+    

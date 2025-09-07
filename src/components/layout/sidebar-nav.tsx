@@ -27,7 +27,6 @@ import { Separator } from "@/components/ui/separator";
 const navItems = [
   { href: "/", label: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/patients", label: "المرضى", icon: Users },
-  { href: "/diagnosis", label: "مساعد التشخيص", icon: BrainCircuit },
   { href: "/medication", label: "الأدوية", icon: Pill },
   { href: "/summarization", label: "التلخيص", icon: FileText },
 ];
@@ -100,3 +99,5 @@ export function SidebarNav() {
     </Sidebar>
   );
 }
+
+    
