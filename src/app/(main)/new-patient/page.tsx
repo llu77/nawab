@@ -1,11 +1,12 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2, Sparkles, UserPlus } from "lucide-react";
+import { generatePatientId } from "@/utils/id-generator";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,12 +30,12 @@ import { MEDICATION_CATEGORIES } from "@/lib/medications";
 import { registerPatient } from "./actions";
 
 const newPatientFormSchema = z.object({
-  name: z.string().min(3, "يجب أن يتكون الاسم من 3 أحرف على الأقل."),
+  name: z.string().min(3, "يجب أن يتكون الاسم من 3 أحرف على الأقل.").optional(),
   age: z.coerce.number().min(1, "العمر مطلوب.").max(120, "يرجى إدخال عمر صحيح."),
   gender: z.string().min(1, "الجنس مطلوب."),
   patientHistory: z.string().min(20, "يرجى تقديم نبذة تاريخية لا تقل عن 20 حرفًا."),
-  symptom: z.string().min(1, "الرجاء اختيار عرض رئيسي واحد."),
-  currentMedication: z.string().optional(),
+  symptoms: z.array(z.string()).min(1, "يجب اختيار عرض واحد على الأقل.").max(1, "يمكنك اختيار عرض واحد فقط حاليًا."),
+  currentMedications: z.array(z.string()).optional(),
   addictionHistory: z.boolean().default(false),
   addictionDetails: z.string().optional(),
   familyHistory: z.boolean().default(false),
@@ -49,7 +50,12 @@ const newPatientFormSchema = z.object({
 
 export default function NewPatientPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [patientId, setPatientId] = useState('');
   const { toast } = useToast();
+
+  useEffect(() => {
+    setPatientId(generatePatientId());
+  }, []);
 
   const form = useForm<z.infer<typeof newPatientFormSchema>>({
     resolver: zodResolver(newPatientFormSchema),
@@ -58,8 +64,8 @@ export default function NewPatientPage() {
       age: undefined,
       gender: "",
       patientHistory: "",
-      symptom: "",
-      currentMedication: "",
+      symptoms: [],
+      currentMedications: [],
       addictionHistory: false,
       addictionDetails: "",
       familyHistory: false,
@@ -72,24 +78,18 @@ export default function NewPatientPage() {
 
   async function onSubmit(values: z.infer<typeof newPatientFormSchema>) {
     setIsLoading(true);
-    
-    // This is a workaround because the AI flow expects an array for symptoms and medications
-    const submissionValues = {
-      ...values,
-      symptoms: values.symptom ? [values.symptom] : [],
-      currentMedications: values.currentMedication ? [values.currentMedication] : [],
-    }
 
-    const response = await registerPatient(submissionValues);
+    const response = await registerPatient({ patientId, ...values });
     
     setIsLoading(false);
 
     if (response.success) {
         toast({
-            title: "تم تسجيل المريض بنجاح",
-            description: `تم إنشاء ملف للمريض ${values.name} برقم: ${response.patientId}. يتم الآن تحليل البيانات بواسطة وكلاء الذكاء الاصطناعي.`,
+            title: "تم تسجيل التقييم بنجاح",
+            description: `تم إنشاء ملف للمريض برقم: ${response.patientId}. يتم الآن تحليل البيانات بواسطة وكلاء الذكاء الاصطناعي.`,
         });
         form.reset();
+        setPatientId(generatePatientId()); // Generate new ID for next patient
     } else {
         toast({
             variant: "destructive",
@@ -102,8 +102,16 @@ export default function NewPatientPage() {
   return (
     <>
       <PageHeader
-        title="إدخال مريض جديد"
-        description="أدخل البيانات الأولية للمريض لتفعيل وكلاء الذكاء الاصطناعي."
+        title="تقييم جديد"
+        description="أدخل البيانات الأولية للمريض لبدء عملية التحليل بواسطة NAWAB-AI."
+        actions={
+          <div className="text-right">
+              <div className="text-sm text-muted-foreground">معرف المريض</div>
+              <div className="text-xl font-mono font-bold text-primary">
+                {patientId}
+              </div>
+            </div>
+        }
       />
       <div className="grid gap-8 justify-center">
         <div className="w-full max-w-4xl">
@@ -111,9 +119,9 @@ export default function NewPatientPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-xl">
                     <UserPlus />
-                    <span>بيانات المريض الأساسية</span>
+                    <span>البيانات الأساسية</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -123,7 +131,7 @@ export default function NewPatientPage() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>الاسم الكامل للمريض</FormLabel>
+                          <FormLabel>اسم المريض (اختياري)</FormLabel>
                           <FormControl>
                             <Input placeholder="مثال: جون دو" {...field} className="text-base"/>
                           </FormControl>
@@ -167,6 +175,12 @@ export default function NewPatientPage() {
                         )}
                       />
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader><CardTitle className="text-xl">الأعراض والتاريخ المرضي</CardTitle></CardHeader>
+                <CardContent className="space-y-6">
                    <FormField
                       control={form.control}
                       name="patientHistory"
@@ -186,14 +200,14 @@ export default function NewPatientPage() {
                     />
                   <FormField
                     control={form.control}
-                    name="symptom"
+                    name="symptoms"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>العرض الرئيسي</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={(value) => field.onChange([value])} value={field.value?.[0] || ""}>
                             <FormControl>
                               <SelectTrigger className="text-base">
-                                <SelectValue placeholder="ابحث أو اختر العرض..."/>
+                                <SelectValue placeholder="اختر العرض الرئيسي..."/>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -216,14 +230,14 @@ export default function NewPatientPage() {
                   
                   <FormField
                     control={form.control}
-                    name="currentMedication"
+                    name="currentMedications"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>الدواء السابق/الحالي (اختياري)</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={(value) => field.onChange(value ? [value] : [])} value={field.value?.[0] || ""}>
                             <FormControl>
                               <SelectTrigger className="text-base">
-                                <SelectValue placeholder="ابحث أو اختر الدواء..."/>
+                                <SelectValue placeholder="اختر الدواء..."/>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -243,77 +257,81 @@ export default function NewPatientPage() {
                       </FormItem>
                     )}
                   />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                      <FormField
-                        control={form.control}
-                        name="addictionHistory"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">علامات إدمان سابقة/حالية؟</FormLabel>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      {watchAddictionHistory && (
-                        <FormField
-                            control={form.control}
-                            name="addictionDetails"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>تفاصيل الإدمان</FormLabel>
-                                <FormControl>
-                                <Input placeholder="مثال: تاريخ تعاطي الكحول لمدة 5 سنوات" {...field} className="text-base"/>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                      )}
-                  </div>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                      <FormField
-                        control={form.control}
-                        name="familyHistory"
-                        render={({ field }) => (
-                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">تاريخ عائلي لأمراض نفسية؟</FormLabel>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      {watchFamilyHistory && (
-                         <FormField
-                            control={form.control}
-                            name="familyHistoryDetails"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>تفاصيل التاريخ العائلي</FormLabel>
-                                <FormControl>
-                                <Input placeholder="مثال: الأم مشخصة باضطراب ثنائي القطب" {...field} className="text-base"/>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                      )}
-                  </div>
-
                 </CardContent>
+              </Card>
+
+              <Card>
+                 <CardHeader><CardTitle className="text-xl">معلومات إضافية</CardTitle></CardHeader>
+                 <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <FormField
+                          control={form.control}
+                          name="addictionHistory"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base">تاريخ تعاطي مواد إدمانية؟</FormLabel>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        {watchAddictionHistory && (
+                          <FormField
+                              control={form.control}
+                              name="addictionDetails"
+                              render={({ field }) => (
+                              <FormItem>
+                                  <FormLabel>تفاصيل الإدمان</FormLabel>
+                                  <FormControl>
+                                  <Input placeholder="مثال: تاريخ تعاطي الكحول لمدة 5 سنوات" {...field} className="text-base"/>
+                                  </FormControl>
+                                  <FormMessage />
+                              </FormItem>
+                              )}
+                          />
+                        )}
+                    </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <FormField
+                          control={form.control}
+                          name="familyHistory"
+                          render={({ field }) => (
+                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base">تاريخ عائلي لأمراض نفسية؟</FormLabel>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        {watchFamilyHistory && (
+                           <FormField
+                              control={form.control}
+                              name="familyHistoryDetails"
+                              render={({ field }) => (
+                              <FormItem>
+                                  <FormLabel>تفاصيل التاريخ العائلي</FormLabel>
+                                  <FormControl>
+                                  <Input placeholder="مثال: الأم مشخصة باضطراب ثنائي القطب" {...field} className="text-base"/>
+                                  </FormControl>
+                                  <FormMessage />
+                              </FormItem>
+                              )}
+                          />
+                        )}
+                    </div>
+                 </CardContent>
               </Card>
 
               <Button type="submit" disabled={isLoading} className="w-full h-14 text-xl font-bold">
@@ -322,7 +340,7 @@ export default function NewPatientPage() {
                 ) : (
                   <Sparkles className="ml-2 h-6 w-6" />
                 )}
-                تفعيل NAWAB AI
+                بدء التحليل بواسطة NAWAB AI
               </Button>
             </form>
           </Form>

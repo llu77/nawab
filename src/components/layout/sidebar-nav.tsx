@@ -29,12 +29,11 @@ const navItems = [
   { href: "/patients", label: "المرضى", icon: Users },
   { href: "/diagnosis", label: "مساعد التشخيص", icon: BrainCircuit },
   { href: "/medication", label: "الأدوية", icon: Pill },
-  { href: "/risk-assessment", label: "تقييم المخاطر", icon: ShieldAlert },
   { href: "/summarization", label: "التلخيص", icon: FileText },
 ];
 
 const secondaryNavItems = [
-    { href: "/new-patient", label: "إدخال مريض جديد", icon: UserPlus },
+    { href: "/new-patient", label: "تقييم جديد", icon: UserPlus },
 ]
 
 export function SidebarNav() {

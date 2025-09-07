@@ -5,11 +5,12 @@ import * as z from "zod";
 import { orchestratorAgent } from "@/ai/flows/orchestrator-agent";
 
 const newPatientFormSchema = z.object({
-  name: z.string().min(3),
+  patientId: z.string(),
+  name: z.string().optional(),
   age: z.coerce.number().min(1).max(120),
   gender: z.string().min(1, "الجنس مطلوب."),
   patientHistory: z.string().min(20),
-  symptoms: z.array(z.string()).min(3).max(10),
+  symptoms: z.array(z.string()).min(1).max(10),
   currentMedications: z.array(z.string()).optional(),
   addictionHistory: z.boolean(),
   addictionDetails: z.string().optional(),
@@ -29,17 +30,16 @@ export async function registerPatient(input: NewPatientInput): Promise<{success:
       return { success: false, error: `Invalid input data: ${errorMessages}` };
     }
 
-    // Generate a unique patient ID
-    const patientId = `PSY-${new Date().getFullYear()}${(new Date().getMonth() + 1).toString().padStart(2, '0')}${new Date().getDate().toString().padStart(2, '0')}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-    
+    const { patientId, ...agentData } = validatedInput.data;
+
     // In a real application, you would save the new patient data to your database here.
-    console.log("Registering new patient in DB (simulation):", { patientId, ...validatedInput.data });
+    console.log("Registering new patient in DB (simulation):", { patientId, ...agentData });
 
     // Trigger the Orchestrator Agent with the initial data.
     // This is the "real work" being done by the agents.
     // This call is intentionally not awaited on the client-side to allow for immediate UI feedback.
     // The agent will run in the background.
-    orchestratorAgent({ patientId, ...validatedInput.data })
+    orchestratorAgent({ patientId, ...agentData })
         .then(results => {
             console.log(`Orchestrator Agent completed for patient ${patientId}:`);
             console.log("Diagnosis:", results.diagnosis);
