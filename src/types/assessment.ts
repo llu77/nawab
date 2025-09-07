@@ -26,9 +26,13 @@ export interface FamilyHistory {
 }
 
 export interface AssessmentData {
-    symptoms?: Symptom[];
-    riskAssessment?: RiskAssessment;
-    substanceHistory?: SubstanceHistory;
-    medicationHistory?: MedicationHistory;
-    familyHistory?: FamilyHistory;
+    symptoms?: any;
+    riskAssessment?: any;
+    substanceHistory?: any;
+    medicationHistory?: any;
+    familyHistory?: any;
+}
+
+export interface ModelStatus {
+    [key: string]: 'pending' | 'running' | 'completed' | 'failed';
 }
