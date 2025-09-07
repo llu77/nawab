@@ -170,7 +170,8 @@ export type OrchestratorOutput = z.infer<typeof OrchestratorOutputSchema>;
 
 export const IntegratedAnalysisInputSchema = z.object({
     patientId: z.string().describe("The patient's unique ID."),
-    initialAnalysis: OrchestratorOutputSchema.describe("The results from the initial parallel processing phase (diagnosis, risk, summary).")
+    initialAnalysis: OrchestratorOutputSchema.describe("The results from the initial parallel processing phase (diagnosis, risk, summary)."),
+    doctorOverride: z.string().optional().describe("The doctor's feedback or corrections to the initial analysis."),
 });
 export type IntegratedAnalysisInput = z.infer<typeof IntegratedAnalysisInputSchema>;
 
@@ -207,5 +208,3 @@ export const IntegratedAnalysisOutputSchema = z.object({
     requiresManualReview: z.boolean().describe("A flag indicating if the case has conflicts or low confidence, requiring manual review."),
 });
 export type IntegratedAnalysisOutput = z.infer<typeof IntegratedAnalysisOutputSchema>;
-
-    

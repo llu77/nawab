@@ -5,7 +5,8 @@
  * @fileOverview This flow corresponds to "Model 4: Filter & Organizer".
  * It takes the results from the initial parallel models (Phase 1),
  * integrates them, resolves conflicts, and generates a unified
- * diagnosis and a comprehensive treatment plan.
+ * diagnosis and a comprehensive treatment plan. It now supports
+ * iterative analysis by incorporating a doctor's override.
  *
  * - performIntegratedAnalysis - The main function to run the analysis.
  */
@@ -40,12 +41,20 @@ const prompt = ai.definePrompt({
         \`\`\`json
         {{{json initialAnalysis.summary}}}
         \`\`\`
+    
+    {{#if doctorOverride}}
+    **CRITICAL FEEDBACK FROM THE TREATING PHYSICIAN:**
+    The attending physician has reviewed the initial analysis and provided the following override. You MUST take this into account as the primary source of truth, adjusting your diagnosis and plan accordingly.
+    \`\`\`
+    {{{doctorOverride}}}
+    \`\`\`
+    {{/if}}
 
     **Your Required Tasks:**
 
     1.  **Synthesize and Conclude Diagnosis:**
-        -   Review the diagnostic hypotheses.
-        -   Resolve any conflicts or discrepancies between them.
+        -   Review the diagnostic hypotheses, prioritizing the doctor's override if provided.
+        -   Resolve any conflicts or discrepancies.
         -   Formulate a definitive primary diagnosis and any secondary diagnoses.
         -   State the level of consensus (full, partial, or conflicting) between the initial data sources.
         -   Set the 'requiresManualReview' flag to true if confidence is low or there are significant conflicts.
@@ -56,9 +65,12 @@ const prompt = ai.definePrompt({
         -   Recommend specific psychotherapeutic modalities (e.g., CBT, DBT), including suggested duration and frequency.
 
     3.  **Write a Clinical Discussion:**
-        -   Provide a detailed, evidence-based narrative.
+        -   Provide a detailed, evidence-based narrative (at least 2-3 paragraphs).
         -   Explain your reasoning for the final diagnosis and treatment choices.
-        -   Justify how you integrated the different pieces of data.
+        -   Justify how you integrated the different pieces of data and incorporated the doctor's feedback if available.
+
+    4.  **Provide References:**
+        -   Cite at least 2-3 clinical guidelines or key studies that support your recommendations (e.g., "APA Guidelines for Major Depressive Disorder, 2022"). Provide dummy URLs.
 
     **CRITICAL INSTRUCTIONS:**
     -   You MUST respond in a valid JSON format that adheres to the output schema.
@@ -85,8 +97,6 @@ const integratedAnalysisFlow = ai.defineFlow(
 
     if (!validatedOutput.treatmentPlan.pharmacological.firstLine.length && 
         !validatedOutput.treatmentPlan.psychotherapeutic.recommended.length) {
-      // This is a critical failure of the model to produce a plan.
-      // We could throw an error or flag for review.
       console.warn(`Warning: Model failed to generate any treatment recommendations for patient ${input.patientId}.`);
       validatedOutput.requiresManualReview = true;
     }
