@@ -75,8 +75,8 @@ export type SummaryOutput = z.infer<typeof SummaryOutputSchema>;
 //-////////////////////////////////////////////////////////////////
 
 export const OrchestratorOutputSchema = z.object({
-    diagnosis: DiagnosePatientOutputSchema,
-    relapsePrediction: RelapsePredictionOutputSchema,
-    summary: SummaryOutputSchema,
+    diagnosis: DiagnosePatientOutputSchema.optional(),
+    relapsePrediction: RelapsePredictionOutputSchema.optional(),
+    summary: SummaryOutputSchema.optional(),
 });
 export type OrchestratorOutput = z.infer<typeof OrchestratorOutputSchema>;

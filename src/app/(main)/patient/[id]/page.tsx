@@ -13,6 +13,7 @@ import {
   Stethoscope,
   Loader2,
   AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -39,7 +40,8 @@ type PatientData = {
   addictionDetails?: string;
   familyHistory: boolean;
   familyHistoryDetails?: string;
-  aiResults: OrchestratorOutput;
+  aiResults?: OrchestratorOutput;
+  processingErrors?: {model: string; error: string}[];
 };
 
 
@@ -118,6 +120,21 @@ export default function PatientProfilePage({ params }: { params: { id: string } 
       />
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-3 space-y-6">
+          {patient.processingErrors && patient.processingErrors.length > 0 && (
+             <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>فشل جزئي في المعالجة</AlertTitle>
+                <AlertDescription>
+                  <p>اكتملت بعض تحليلات الذكاء الاصطناعي بنجاح، لكن البعض الآخر فشل. قد تكون البيانات المعروضة غير مكتملة.</p>
+                  <ul className="mt-2 list-disc list-inside text-xs">
+                    {patient.processingErrors.map((err, index) => (
+                      <li key={index}>فشل نموذج <strong>{err.model}</strong>: {typeof err.error === 'object' ? JSON.stringify(err.error) : err.error}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+            </Alert>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -155,92 +172,98 @@ export default function PatientProfilePage({ params }: { params: { id: string } 
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BrainCircuit className="h-6 w-6" />
-                <span>الفرضيات التشخيصية (بواسطة AI)</span>
-              </CardTitle>
-              <CardDescription>
-                تحليل أولي بناءً على المعلومات المقدمة ومعايير DSM-5.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
-                  {patient.aiResults.diagnosis.diagnosisHypotheses.map((hypothesis, index) => (
-                    <AccordionItem value={`item-${index}`} key={index}>
-                      <AccordionTrigger className="text-lg hover:no-underline">
-                        <div className="flex items-center gap-4 w-full">
-                          <span className="font-semibold">{hypothesis.diagnosis}</span>
-                          <Badge variant={hypothesis.confidence > 0.7 ? "default" : "secondary"} className="text-sm">
-                            {`الثقة: ${(hypothesis.confidence * 100).toFixed(0)}%`}
-                          </Badge>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="space-y-4 px-2 text-base">
-                        <div>
-                          <h4 className="font-semibold mb-1">المنطق (معايير DSM-5)</h4>
-                          <p className="text-muted-foreground">{hypothesis.reasoning}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold mb-1">الأدلة الداعمة</h4>
-                          <p className="text-muted-foreground">{hypothesis.supportingEvidence}</p>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-6 md:grid-cols-2">
+          {patient.aiResults?.diagnosis && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                    <ShieldAlert className="h-6 w-6" />
-                    <span>تنبؤات المخاطر (بواسطة AI)</span>
+                  <BrainCircuit className="h-6 w-6" />
+                  <span>الفرضيات التشخيصية (بواسطة AI)</span>
                 </CardTitle>
                 <CardDescription>
-                    تقييم أولي لاحتمالية الانتكاس.
+                  تحليل أولي بناءً على المعلومات المقدمة ومعايير DSM-5.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                  <div className="text-center">
-                    <p className="text-base font-medium text-muted-foreground">احتمالية الانتكاس</p>
-                    <p className="text-6xl font-bold font-headline mt-1">
-                      {patient.aiResults.relapsePrediction.relapseProbability.toFixed(1)}%
-                    </p>
-                    <div className="flex items-center justify-center gap-2 mt-3">
-                      <span className={`px-4 py-1.5 text-base font-semibold rounded-full text-white ${getRiskColor(patient.aiResults.relapsePrediction.relapseProbability)}`}>
-                        خطر {getRiskLevel(patient.aiResults.relapsePrediction.relapseProbability)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="w-full px-2">
-                    <Progress value={patient.aiResults.relapsePrediction.relapseProbability} className="h-2.5 [&>div]:bg-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-base mb-1">الأساس المنطقي</h4>
-                    <p className="text-base text-muted-foreground bg-accent/30 p-3 rounded-md">{patient.aiResults.relapsePrediction.rationale}</p>
-                  </div>
+              <CardContent>
+                  <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
+                    {patient.aiResults.diagnosis.diagnosisHypotheses.map((hypothesis, index) => (
+                      <AccordionItem value={`item-${index}`} key={index}>
+                        <AccordionTrigger className="text-lg hover:no-underline">
+                          <div className="flex items-center gap-4 w-full">
+                            <span className="font-semibold">{hypothesis.diagnosis}</span>
+                            <Badge variant={hypothesis.confidence > 0.7 ? "default" : "secondary"} className="text-sm">
+                              {`الثقة: ${(hypothesis.confidence * 100).toFixed(0)}%`}
+                            </Badge>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-4 px-2 text-base">
+                          <div>
+                            <h4 className="font-semibold mb-1">المنطق (معايير DSM-5)</h4>
+                            <p className="text-muted-foreground">{hypothesis.reasoning}</p>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold mb-1">الأدلة الداعمة</h4>
+                            <p className="text-muted-foreground">{hypothesis.supportingEvidence}</p>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
               </CardContent>
             </Card>
-            <Card>
+          )}
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {patient.aiResults?.relapsePrediction && (
+                <Card>
                 <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-6 w-6" />
-                    <span>ملخص الذكاء الاصطناعي</span>
-                </CardTitle>
-                <CardDescription>
-                    ملخص شامل تم إنشاؤه بواسطة AI للحالة الأولية للمريض.
-                </CardDescription>
+                    <CardTitle className="flex items-center gap-2">
+                        <ShieldAlert className="h-6 w-6" />
+                        <span>تنبؤات المخاطر (بواسطة AI)</span>
+                    </CardTitle>
+                    <CardDescription>
+                        تقييم أولي لاحتمالية الانتكاس.
+                    </CardDescription>
                 </CardHeader>
-                <CardContent>
-                     <div className="prose prose-base max-w-none text-muted-foreground bg-accent/30 p-4 rounded-md">
-                        <p>{patient.aiResults.summary.summary}</p>
+                <CardContent className="space-y-4">
+                    <div className="text-center">
+                        <p className="text-base font-medium text-muted-foreground">احتمالية الانتكاس</p>
+                        <p className="text-6xl font-bold font-headline mt-1">
+                        {patient.aiResults.relapsePrediction.relapseProbability.toFixed(1)}%
+                        </p>
+                        <div className="flex items-center justify-center gap-2 mt-3">
+                        <span className={`px-4 py-1.5 text-base font-semibold rounded-full text-white ${getRiskColor(patient.aiResults.relapsePrediction.relapseProbability)}`}>
+                            خطر {getRiskLevel(patient.aiResults.relapsePrediction.relapseProbability)}
+                        </span>
+                        </div>
+                    </div>
+                    <div className="w-full px-2">
+                        <Progress value={patient.aiResults.relapsePrediction.relapseProbability} className="h-2.5 [&>div]:bg-primary" />
+                    </div>
+                    <div>
+                        <h4 className="font-semibold text-base mb-1">الأساس المنطقي</h4>
+                        <p className="text-base text-muted-foreground bg-accent/30 p-3 rounded-md">{patient.aiResults.relapsePrediction.rationale}</p>
                     </div>
                 </CardContent>
-            </Card>
+                </Card>
+            )}
+            {patient.aiResults?.summary && (
+                <Card>
+                    <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-6 w-6" />
+                        <span>ملخص الذكاء الاصطناعي</span>
+                    </CardTitle>
+                    <CardDescription>
+                        ملخص شامل تم إنشاؤه بواسطة AI للحالة الأولية للمريض.
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="prose prose-base max-w-none text-muted-foreground bg-accent/30 p-4 rounded-md">
+                            <p>{patient.aiResults.summary.summary}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
           </div>
         </div>
       </div>

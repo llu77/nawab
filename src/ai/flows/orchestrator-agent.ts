@@ -22,7 +22,10 @@ import {
     SummaryOutputSchema, 
     type DiagnosePatientInput, 
     type RelapsePredictionInput,
-    type OrchestratorOutput 
+    type OrchestratorOutput,
+    DiagnosePatientOutput,
+    RelapsePredictionOutput,
+    SummaryOutput
 } from './schemas';
 
 export const OrchestratorInputSchema = z.object({
@@ -41,9 +44,9 @@ export const OrchestratorInputSchema = z.object({
 export type OrchestratorInput = z.infer<typeof OrchestratorInputSchema>;
 
 export const OrchestratorOutputSchema = z.object({
-    diagnosis: DiagnosePatientOutputSchema,
-    relapsePrediction: RelapsePredictionOutputSchema,
-    summary: SummaryOutputSchema,
+    diagnosis: DiagnosePatientOutputSchema.optional(),
+    relapsePrediction: RelapsePredictionOutputSchema.optional(),
+    summary: SummaryOutputSchema.optional(),
 });
 
 
@@ -63,7 +66,7 @@ const orchestratorAgentFlow = ai.defineFlow(
     outputSchema: OrchestratorOutputSchema,
   },
   async (input) => {
-    console.log(`Orchestrator agent started for patient: ${input.patientId}`);
+    console.log(`🚀 Orchestrator agent started for patient: ${input.patientId}`);
     
     let comprehensiveHistory = `Patient Name: ${input.name}, Age: ${input.age}, Gender: ${input.gender}.\n`;
     comprehensiveHistory += `Brief History: ${input.patientHistory}\n`;
@@ -96,16 +99,31 @@ const orchestratorAgentFlow = ai.defineFlow(
     };
 
     console.log("Starting concurrent analysis for Diagnosis, Relapse Prediction, and Summarization...");
-    const [diagnosis, relapsePrediction, summary] = await Promise.all([
+
+    const [diagnosisResult, relapsePredictionResult, summaryResult] = await Promise.allSettled([
       diagnosePatient(diagnosisInput),
       predictRelapseProbability(relapsePredictionInput),
       generateSummary(summaryInput),
     ]);
+
+    const errors: { model: string, error: any }[] = [];
+    if (diagnosisResult.status === 'rejected') {
+        console.error("Diagnosis model failed:", diagnosisResult.reason);
+        errors.push({ model: 'diagnosis', error: diagnosisResult.reason?.message || diagnosisResult.reason });
+    }
+     if (relapsePredictionResult.status === 'rejected') {
+        console.error("Relapse prediction model failed:", relapsePredictionResult.reason);
+        errors.push({ model: 'relapsePrediction', error: relapsePredictionResult.reason?.message || relapsePredictionResult.reason });
+    }
+     if (summaryResult.status === 'rejected') {
+        console.error("Summary model failed:", summaryResult.reason);
+        errors.push({ model: 'summary', error: summaryResult.reason?.message || summaryResult.reason });
+    }
     
-    const results = {
-        diagnosis,
-        relapsePrediction,
-        summary,
+    const results: OrchestratorOutput = {
+        diagnosis: diagnosisResult.status === 'fulfilled' ? diagnosisResult.value : undefined,
+        relapsePrediction: relapsePredictionResult.status === 'fulfilled' ? relapsePredictionResult.value : undefined,
+        summary: summaryResult.status === 'fulfilled' ? summaryResult.value : undefined,
     };
 
     // Save results to Firestore
@@ -114,7 +132,9 @@ const orchestratorAgentFlow = ai.defineFlow(
         const patientDataToSave = {
             ...input,
             registrationDate: new Date().toISOString().split('T')[0],
-            aiResults: results
+            aiResults: results,
+            processingErrors: errors.length > 0 ? errors : null,
+            processingStatus: errors.length > 0 ? 'partial_success' : 'completed'
         };
 
         await patientDocRef.set(patientDataToSave);
