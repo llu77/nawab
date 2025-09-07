@@ -54,7 +54,7 @@ export function SidebarNav() {
             <path d="M163.5,82.5a40,40,0,0,0-71,0V96h71ZM112,96V84a20,20,0,0,1,32,0v12" fill="none" stroke="hsl(var(--primary))" strokeLinecap="round" strokeLinejoin="round" strokeWidth="12"></path>
             <path d="M104,136a24,24,0,1,1,48,0c0,16-24,32-24,32S104,152,104,136Z" fill="none" stroke="hsl(var(--primary))" strokeLinecap="round" strokeLinejoin="round" strokeWidth="12"></path>
           </svg>
-          <div className="flex items-baseline gap-2">
+          <div className="flex flex-col">
             <h2 className="text-lg font-headline font-semibold">NawabMD</h2>
             <p className="text-[10px] text-muted-foreground font-ruqaa whitespace-nowrap">Clinical support with artificial intelligence</p>
           </div>
