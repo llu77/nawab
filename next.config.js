@@ -3,6 +3,8 @@ require('dotenv').config();
 
 /** @type {import('next').NextConfig} */
 
+const isDev = process.env.NODE_ENV === 'development';
+
 const securityHeaders = [
   {
     key: 'X-Frame-Options',
@@ -10,8 +12,9 @@ const securityHeaders = [
   },
   {
     key: 'Content-Security-Policy',
-    // Allow scripts from self and Google Fonts. Allow styles from self, Google Fonts (inline).
-    value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
+    // In development, allow 'unsafe-eval' for React Refresh (hot reloading).
+    // In production, maintain a strict policy.
+    value: `default-src 'self'; script-src 'self' ${isDev ? "'unsafe-eval'" : ''}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;`
   },
   {
     key: 'X-Content-Type-Options',
