@@ -23,6 +23,7 @@ const prompt = ai.definePrompt({
   name: 'integratedAnalysisPrompt',
   input: { schema: IntegratedAnalysisInputSchema },
   output: { schema: IntegratedAnalysisOutputSchema },
+  model: 'googleai/gemini-1.5-flash',
   prompt: `
     As a senior consultant psychiatrist, your task is to filter, organize, and synthesize information from multiple AI models to create a cohesive and actionable clinical picture.
 

@@ -22,6 +22,7 @@ const relapsePredictionPrompt = ai.definePrompt({
   name: 'relapsePredictionPrompt',
   input: {schema: RelapsePredictionInputSchema},
   output: {schema: RelapsePredictionOutputSchema},
+  model: 'googleai/gemini-1.5-flash',
   prompt: `You are an expert AI risk analyst specializing in predicting relapse for mental health patients.
   Based on the provided data, determine the likelihood of relapse and provide a clear, evidence-based rationale.
 
@@ -52,5 +53,3 @@ const relapsePredictionFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    

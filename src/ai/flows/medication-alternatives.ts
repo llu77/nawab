@@ -24,6 +24,7 @@ const prompt = ai.definePrompt({
   name: 'medicationAnalysisPrompt',
   input: {schema: MedicationAnalysisInputSchema},
   output: {schema: MedicationAnalysisOutputSchema},
+  model: 'googleai/gemini-1.5-flash',
   prompt: `As a clinical pharmacist specializing in psychiatric medications, your task is to conduct a thorough medication review and provide actionable recommendations.
 
   **Patient Information:**
@@ -40,7 +41,7 @@ const prompt = ai.definePrompt({
 
   2.  **Drug Interactions:**
       -   Analyze potential interactions between the listed medications.
-      -   For each significant interaction, describe its clinical significance and provide a clear recommendation. Classify severity as 'minor', 'moderate', 'major', or 'contraindicated'.
+      -   For each significant interaction, describe its clinical significance and provide a clear recommendation. Classify severity as 'minor', 'moderate', 'major', 'contraindicated'.
 
   3.  **Safe Alternatives:**
       -   Based on the entire clinical picture, recommend safe and effective alternative medications.
