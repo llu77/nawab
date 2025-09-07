@@ -1,8 +1,17 @@
+
 'use server';
 
 import { orchestratorAgent } from "@/ai/flows/orchestrator-agent";
 import { generateSummary } from "@/ai/flows/ai-summary-generator";
-import { OrchestratorInputSchema, SummaryInputSchema, type OrchestratorInput, type SummaryInput } from "@/ai/flows/schemas";
+import { performIntegratedAnalysis } from "@/ai/flows/integrated-analysis";
+import { 
+    OrchestratorInputSchema, 
+    SummaryInputSchema,
+    IntegratedAnalysisInputSchema, 
+    type OrchestratorInput, 
+    type SummaryInput,
+    type IntegratedAnalysisInput
+} from "@/ai/flows/schemas";
 
 /**
  * A dedicated server action to bridge the client and the AI orchestrator.
@@ -52,3 +61,24 @@ export async function runSummaryAction(input: SummaryInput) {
         throw new Error("An unknown error occurred during AI summary generation.");
     }
 }
+
+
+/**
+ * Server action to run the integrated analysis flow.
+ */
+export async function runIntegratedAnalysisAction(input: IntegratedAnalysisInput) {
+    try {
+        const validatedInput = IntegratedAnalysisInputSchema.parse(input);
+        console.log("Server Action: Running integrated analysis with validated input:", validatedInput);
+        const result = await performIntegratedAnalysis(validatedInput);
+        console.log("Server Action: Integrated analysis completed with result:", result);
+        return JSON.parse(JSON.stringify(result));
+    } catch (error) {
+        console.error("Error running integrated analysis action:", error);
+        if (error instanceof Error) {
+            throw new Error(`Failed to execute integrated analysis: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred during integrated analysis.");
+    }
+}
+

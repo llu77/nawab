@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useEffect, useState } from "react";
@@ -27,20 +27,18 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { Loader } from "lucide-react";
+import { Loader, PlusCircle, Trash2 } from "lucide-react";
 import { runOrchestratorAction } from "@/app/actions";
 import type { OrchestratorInput } from "@/ai/flows/schemas";
 
-// This is a client-side specific schema. It deliberately mirrors the server-side
-// OrchestratorInputSchema to ensure data shape is correct, but it breaks the
-// direct import dependency from a client component to a server-used file,
-// which was causing the build to fail.
 const assessmentSchema = z.object({
     name: z.string().min(1, "اسم المريض مطلوب."),
     age: z.number({required_error: "العمر مطلوب.", invalid_type_error: "يجب أن يكون العمر رقمًا."}).min(1, "العمر مطلوب.").max(120, "عمر غير صالح"),
     gender: z.string(),
     patientHistory: z.string(),
-    mainSymptom: z.string().min(1, "يجب اختيار عرض رئيسي واحد على الأقل"),
+    symptoms: z.array(z.object({
+        name: z.string().min(1, "يجب اختيار عرض."),
+    })).min(5, "يجب اختيار 5 أعراض على الأقل.").max(10, "لا يمكن اختيار أكثر من 10 أعراض."),
     currentMedications: z.array(z.string()).optional(),
     addictionHistory: z.boolean(),
     addictionDetails: z.string().optional(),
@@ -78,8 +76,13 @@ export default function NewPatientPage() {
         familyHistory: false,
         familyHistoryDetails: "",
         currentMedications: [],
-        mainSymptom: "",
+        symptoms: [{name: ""}],
     }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "symptoms"
   });
 
   async function onSubmit(values: z.infer<typeof assessmentSchema>) {
@@ -90,15 +93,13 @@ export default function NewPatientPage() {
     });
 
     try {
-      // Reconstruct the input to match the full OrchestratorInput schema
-      // This is the data that will be sent to the server action.
       const orchestratorInput: OrchestratorInput = {
         patientId,
         name: values.name,
         age: Number(values.age),
         gender: values.gender,
         patientHistory: values.patientHistory,
-        symptoms: [values.mainSymptom], // The form only has one main symptom for now
+        symptoms: values.symptoms.map(s => s.name),
         currentMedications: values.currentMedications,
         addictionHistory: values.addictionHistory,
         addictionDetails: values.addictionDetails,
@@ -119,10 +120,8 @@ export default function NewPatientPage() {
         
         const storedResult = { ...result, input: orchestratorInput, submissionDate: new Date().toISOString() };
         
-        // Store result in local storage to pass to the results page
         localStorage.setItem(`patient_results_${patientId}`, JSON.stringify(storedResult));
 
-        // Add to patient list
         const patientList = JSON.parse(localStorage.getItem('patient_list') || '[]');
         const patientExists = patientList.some((p: any) => p.id === patientId);
         if (!patientExists) {
@@ -228,38 +227,60 @@ export default function NewPatientPage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-xl">الأعراض الرئيسية</CardTitle>
-                    <p className="text-sm text-muted-foreground">اختر العرض الأكثر إلحاحًا الذي يواجهه المريض.</p>
+                    <p className="text-sm text-muted-foreground">اختر من 5 إلى 10 أعراض يواجهها المريض.</p>
                 </CardHeader>
-                <CardContent>
-                    <FormField
-                    control={form.control}
-                    name="mainSymptom"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>العرض الرئيسي</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="اختر من قائمة الأعراض..." />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {SYMPTOM_CATEGORIES.map((category) => (
-                                <div key={category.name}>
-                                    <p className="font-bold px-2 py-1 text-right">{category.name}</p>
-                                    {category.symptoms.map((symptom) => (
-                                    <SelectItem key={symptom} value={symptom}>
-                                        {symptom}
-                                    </SelectItem>
-                                    ))}
+                <CardContent className="space-y-4">
+                    {fields.map((field, index) => (
+                       <FormField
+                            key={field.id}
+                            control={form.control}
+                            name={`symptoms.${index}.name`}
+                            render={({ field }) => (
+                                <FormItem>
+                                <div className="flex items-end gap-2">
+                                     <div className="flex-1">
+                                        <FormLabel>العرض {index + 1}</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                            <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="اختر من قائمة الأعراض..." />
+                                            </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {SYMPTOM_CATEGORIES.map((category) => (
+                                                <div key={category.name}>
+                                                    <p className="font-bold px-2 py-1 text-right">{category.name}</p>
+                                                    {category.symptoms.map((symptom) => (
+                                                    <SelectItem key={symptom} value={symptom}>
+                                                        {symptom}
+                                                    </SelectItem>
+                                                    ))}
+                                                </div>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
                                 </div>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    ))}
+                     <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => append({ name: "" })}
+                        disabled={fields.length >= 10}
+                    >
+                       <PlusCircle className="mr-2 h-4 w-4" />
+                        إضافة عرض آخر
+                    </Button>
+                    <FormMessage>{form.formState.errors.symptoms?.message}</FormMessage>
                 </CardContent>
             </Card>
             
@@ -391,5 +412,3 @@ export default function NewPatientPage() {
     </>
   );
 }
-
-    
