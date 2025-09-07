@@ -2,10 +2,10 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Sparkles, BrainCircuit, PlusCircle } from "lucide-react";
+import { Loader2, Sparkles, BrainCircuit } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,17 +21,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { getDiagnosis } from "./actions";
 import { PageHeader } from "@/components/page-header";
 import { SYMPTOM_CATEGORIES } from "@/lib/symptoms";
 import type { DiagnosePatientOutput } from "@/ai/flows/schemas";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 const diagnosisFormSchema = z.object({
   patientHistory: z.string().min(50, "Please provide a more detailed patient history (at least 50 characters)."),
   sessionNotes: z.string().min(100, "Please provide more detailed session notes (at least 100 characters)."),
-  symptoms: z.array(z.object({ value: z.string().min(1, "الرجاء اختيار عرض.") })).min(3, "Please select at least 3 symptoms.").max(10, "Please select no more than 10 symptoms."),
+  symptoms: z.array(z.string()).min(3, "Please select at least 3 symptoms.").max(10, "Please select no more than 10 symptoms."),
 });
 
 export default function DiagnosisPage() {
@@ -44,24 +44,26 @@ export default function DiagnosisPage() {
     defaultValues: {
       patientHistory: "",
       sessionNotes: "",
-      symptoms: [{ value: "" }, { value: "" }, { value: "" }, { value: "" }],
+      symptoms: [],
     },
   });
 
-  const { fields, append } = useFieldArray({
-    control: form.control,
-    name: "symptoms",
-  });
+  const symptomOptions = SYMPTOM_CATEGORIES.flatMap(category =>
+    category.symptoms.map(symptom => ({
+      value: symptom,
+      label: symptom,
+      group: category.name,
+    }))
+  );
 
 
   async function onSubmit(values: z.infer<typeof diagnosisFormSchema>) {
     setIsLoading(true);
     setResult(null);
     
-    const symptomValues = values.symptoms.map(s => s.value).filter(Boolean);
     const sessionNotesArray = values.sessionNotes.split('\n').filter(note => note.trim() !== '');
     
-    const enrichedPatientHistory = `${values.patientHistory}\n\nSelected Symptoms:\n- ${symptomValues.join('\n- ')}`;
+    const enrichedPatientHistory = `${values.patientHistory}\n\nSelected Symptoms:\n- ${values.symptoms.join('\n- ')}`;
 
     const response = await getDiagnosis({
         patientHistory: enrichedPatientHistory,
@@ -114,52 +116,26 @@ export default function DiagnosisPage() {
                     )}
                   />
                   
-                  <div className="space-y-4">
-                    <FormLabel>الأعراض</FormLabel>
-                    {fields.map((field, index) => (
-                       <FormField
-                        key={field.id}
-                        control={form.control}
-                        name={`symptoms.${index}.value`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger className="text-base">
-                                  <SelectValue placeholder={`اختر العرض ${index + 1}...`} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {SYMPTOM_CATEGORIES.map((category) => (
-                                    <SelectGroup key={category.name}>
-                                      <SelectLabel>{category.name}</SelectLabel>
-                                      {category.symptoms.map((symptom) => (
-                                        <SelectItem key={symptom} value={symptom}>
-                                          {symptom}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectGroup>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    ))}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => append({ value: "" })}
-                    >
-                      <PlusCircle className="ml-2 h-4 w-4" />
-                      إضافة عرض
-                    </Button>
-                    <FormDescription>اختر من 3 إلى 10 أعراض لوصف حالة المريض.</FormDescription>
-                     {form.formState.errors.symptoms && <p className="text-sm font-medium text-destructive">{form.formState.errors.symptoms.message}</p>}
-                  </div>
+                   <FormField
+                    control={form.control}
+                    name="symptoms"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الأعراض</FormLabel>
+                        <FormControl>
+                          <MultiSelect
+                            options={symptomOptions}
+                            selected={field.value}
+                            onChange={field.onChange}
+                            placeholder="اختر الأعراض..."
+                            className="text-base"
+                           />
+                        </FormControl>
+                        <FormDescription>اختر من 3 إلى 10 أعراض لوصف حالة المريض.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={form.control}
