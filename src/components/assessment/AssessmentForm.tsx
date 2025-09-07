@@ -1,4 +1,5 @@
 // components/assessment/AssessmentForm.tsx
+'use client';
 import { useForm } from 'react-hook-form';
 import type { AssessmentData } from '@/types/assessment';
 
