@@ -116,3 +116,5 @@ export const DIAGNOSIS_CATEGORIES = [
     ],
   },
 ];
+
+    
