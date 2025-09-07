@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,6 +9,7 @@ import { BrainCircuit, FileText, ShieldAlert, User, Activity, AlertTriangle, Tar
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Loader } from "lucide-react";
 
 // We need to combine the input and output types for the full context
 type PatientResult = OrchestratorOutput & {
@@ -39,6 +39,7 @@ export default function PatientResultsPage() {
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-full">
+        <Loader className="ml-2 h-8 w-8 animate-spin" />
         <p>جاري تحميل النتائج...</p>
     </div>;
   }
@@ -177,6 +178,14 @@ function SummaryCard({ summary }: { summary: SummaryOutput }) {
                         </div>
                     </div>
                 )}
+                 {summary.suggestedQuestions && summary.suggestedQuestions.length > 0 && (
+                    <div>
+                        <h4 className="font-semibold mb-2 text-base">أسئلة مقترحة</h4>
+                         <ul className="list-disc pr-5 space-y-1 text-sm text-muted-foreground">
+                            {summary.suggestedQuestions.map((q, i) => <li key={i}>{q}</li>)}
+                        </ul>
+                    </div>
+                )}
             </CardContent>
         </Card>
     )
@@ -254,5 +263,3 @@ function RelapseCard({ relapsePrediction }: { relapsePrediction: RelapsePredicti
         </Card>
     )
 }
-
-    
