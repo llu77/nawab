@@ -23,8 +23,11 @@ import { useToast } from "@/hooks/use-toast";
 import { getRelapsePrediction } from "./actions";
 import { PageHeader } from "@/components/page-header";
 import type { RelapsePredictionOutput } from "@/ai/flows/schemas";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DIAGNOSIS_CATEGORIES } from "@/lib/diagnoses";
 
 const riskFormSchema = z.object({
+  expectedDiagnosis: z.string().optional(),
   behavioralPatterns: z.string().min(100, "Please provide detailed behavioral patterns (at least 100 characters)."),
   patientHistory: z.string().min(50, "Please provide patient history (at least 50 characters)."),
   riskFactors: z.string().min(20, "Please list relevant risk factors."),
@@ -38,6 +41,7 @@ export default function RiskAssessmentPage() {
   const form = useForm<z.infer<typeof riskFormSchema>>({
     resolver: zodResolver(riskFormSchema),
     defaultValues: {
+      expectedDiagnosis: "",
       behavioralPatterns: "",
       patientHistory: "",
       riskFactors: "",
@@ -48,7 +52,16 @@ export default function RiskAssessmentPage() {
     setIsLoading(true);
     setResult(null);
 
-    const response = await getRelapsePrediction(values);
+    // Enrich history with expected diagnosis if provided
+    const patientHistory = values.expectedDiagnosis 
+      ? `${values.patientHistory}\n\nExpected Diagnosis: ${values.expectedDiagnosis}`
+      : values.patientHistory;
+
+    const response = await getRelapsePrediction({
+      behavioralPatterns: values.behavioralPatterns,
+      patientHistory: patientHistory,
+      riskFactors: values.riskFactors
+    });
 
     setIsLoading(false);
 
@@ -90,6 +103,34 @@ export default function RiskAssessmentPage() {
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="expectedDiagnosis"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>التشخيص المتوقع (اختياري)</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="text-base">
+                              <SelectValue placeholder="اختر التشخيص المتوقع..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {DIAGNOSIS_CATEGORIES.map((category) => (
+                                <optgroup label={category.name} key={category.name} className="font-semibold p-2">
+                                  {category.diagnoses.map((diagnosis) => (
+                                    <SelectItem key={diagnosis} value={diagnosis} className="font-normal">
+                                      {diagnosis}
+                                    </SelectItem>
+                                  ))}
+                                </optgroup>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="behavioralPatterns"
