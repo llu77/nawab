@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MEDICATION_CATEGORIES } from "@/lib/medications";
 import { DIAGNOSIS_CATEGORIES } from "@/lib/diagnoses";
@@ -170,5 +170,3 @@ export default function MedicationPage() {
     </>
   );
 }
-
-    
