@@ -1,6 +1,7 @@
 
 import type { Timestamp } from 'firebase/firestore';
 import type { Symptom, RiskAssessment, SubstanceHistory, MedicationHistory, FamilyHistory } from '@/types/assessment';
+import { AuditAction, AuditSeverity } from '../audit/logger';
 
 export const collections = {
   patients: 'patients',
@@ -45,7 +46,7 @@ export interface DoctorDocument {
     name: string;
     clinicId: string;
     specialization: string;
-    encryptedData: string;
+    encryptedData: string; // Encrypted sensitive details
     roles: ('doctor' | 'admin')[];
     createdAt: Timestamp;
 }
@@ -62,18 +63,18 @@ export interface SessionDocument {
 }
 
 export interface AuditLogDocument {
-    id: string;
+    id: string; // Unique log entry ID
     timestamp: Timestamp;
-    userId: string;
-    action: string;
+    userId: string; // User who performed the action
+    action: AuditAction;
     resource: {
-        type: string;
-        id: string;
+        type: 'patient' | 'assessment' | 'system' | 'user_account';
+        id: string; // ID of the affected resource
     };
     ip?: string;
     userAgent?: string;
     result: 'success' | 'failure';
-    severity: 'info' | 'warning' | 'critical';
+    severity: AuditSeverity;
     metadata?: Record<string, any>;
-    signature: string;
+    signature: string; // HMAC signature to ensure integrity
 }

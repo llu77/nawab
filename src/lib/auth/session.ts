@@ -1,7 +1,7 @@
 
-import { doc, getDoc, setDoc, serverTimestamp, updateDoc, deleteDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
-import { generateSecureToken } from "@/utils/helpers"; // Assuming this helper exists
+import { generateSecureToken } from "@/utils/helpers"; 
 
 interface DeviceInfo {
     userAgent?: string;
@@ -13,6 +13,7 @@ export class SessionManager {
 
   /**
    * Creates a new session for a user and returns the session token.
+   * This should be called upon successful login.
    */
   async createSession(userId: string, deviceInfo: DeviceInfo): Promise<string> {
     const sessionToken = generateSecureToken();
@@ -40,7 +41,7 @@ export class SessionManager {
   }
   
   /**
-   * Terminates a session by marking it as inactive.
+   * Terminates a session by marking it as inactive (e.g., on logout).
    */
   async terminateSession(token: string): Promise<void> {
       await updateDoc(doc(db, 'sessions', token), {
@@ -50,27 +51,31 @@ export class SessionManager {
 
   /**
    * Validates a session token. Returns true if valid, false otherwise.
+   * This would be used in middleware or at the start of protected API calls.
    */
   async validateSession(token: string): Promise<boolean> {
     const sessionRef = doc(db, 'sessions', token);
     const sessionSnap = await getDoc(sessionRef);
 
     if (!sessionSnap.exists()) {
+      console.warn(`Session validation failed: Token ${token} not found.`);
       return false;
     }
 
     const data = sessionSnap.data();
     
     if (!data.isActive) {
+        console.warn(`Session validation failed: Token ${token} is inactive.`);
         return false;
     }
 
     if (data.expiresAt.toDate() < new Date()) {
-      await this.terminateSession(token);
+      console.warn(`Session validation failed: Token ${token} has expired.`);
+      await this.terminateSession(token); // Clean up expired session
       return false;
     }
 
-    // If the session is valid, refresh it
+    // If the session is valid, refresh it to extend the user's activity window
     await this.refreshSession(token);
     return true;
   }

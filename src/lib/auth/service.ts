@@ -28,8 +28,9 @@ export class AuthService {
     // 2. Update the user's display name in Firebase Auth
     await updateProfile(user, { displayName: profile.name });
 
-    // 3. Encrypt sensitive profile data
-    const encryptedProfile = encryptionService.encrypt(profile);
+    // 3. Encrypt sensitive profile data before saving
+    const { name, clinicId, specialization, ...sensitiveData } = profile;
+    const encryptedProfile = encryptionService.encrypt(sensitiveData);
 
     // 4. Save the doctor's profile to Firestore
     await setDoc(doc(db, 'doctors', user.uid), {
@@ -44,8 +45,9 @@ export class AuthService {
 
     // 5. **IMPORTANT**: Trigger a backend function to set custom claims
     // This cannot be done from the client.
-    console.log(`User ${user.uid} created. Backend function must be triggered to set custom claims.`);
-    // Example: await callFirebaseFunction('setDoctorClaims', { userId: user.uid, clinicId: profile.clinicId });
+    console.log(`User ${user.uid} created. A backend function must be triggered to set custom claims for role-based access.`);
+    // Example of a function call that would need to be implemented:
+    // await callFirebaseFunction('setDoctorClaims', { userId: user.uid, clinicId: profile.clinicId });
     
     return userCredential;
   }
@@ -56,7 +58,7 @@ export class AuthService {
    * through enrolling a second factor.
    */
   async setupMFA(userId: string) {
-    console.log(`Setting up MFA for user ${userId}. This requires further implementation.`);
+    console.log(`Setting up MFA for user ${userId}. This requires further implementation using the Firebase Auth SDK for multi-factor authentication.`);
     // Implementation would involve functions like `multiFactor(auth.currentUser).enroll()`
   }
 }

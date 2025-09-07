@@ -8,7 +8,7 @@ export function formatDate(date: Date): string {
 
 /**
  * Generates a cryptographically secure random token.
- * @param length - The desired length of the token.
+ * @param length - The desired length of the token in bytes.
  * @returns A secure random token as a hex string.
  */
 export function generateSecureToken(length: number = 32): string {
