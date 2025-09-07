@@ -34,7 +34,7 @@ const newPatientFormSchema = z.object({
   age: z.coerce.number().min(1, "العمر مطلوب.").max(120, "يرجى إدخال عمر صحيح."),
   gender: z.string().min(1, "الجنس مطلوب."),
   patientHistory: z.string().min(20, "يرجى تقديم نبذة تاريخية لا تقل عن 20 حرفًا."),
-  symptoms: z.array(z.string()).min(5, "الرجاء اختيار 5 أعراض على الأقل.").max(10, "الرجاء اختيار 10 أعراض على الأكثر."),
+  symptoms: z.array(z.string()).min(3, "الرجاء اختيار 3 أعراض على الأقل.").max(10, "الرجاء اختيار 10 أعراض على الأكثر."),
   currentMedications: z.array(z.string()).optional(),
   addictionHistory: z.boolean().default(false),
   addictionDetails: z.string().optional(),
@@ -199,7 +199,7 @@ export default function NewPatientPage() {
                     name="symptoms"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>الأعراض الرئيسية (5-10 أعراض)</FormLabel>
+                        <FormLabel>الأعراض الرئيسية (3-10 أعراض)</FormLabel>
                         <FormControl>
                            <MultiSelect
                             options={symptomOptions}
