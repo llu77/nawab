@@ -159,7 +159,7 @@ export const MEDICATION_CATEGORIES = [
       "Intuniv (Guanfacine)",
       "Kapvay (Clonidine)",
       "Qelbree (Viloxazine)",
-      // "Wellbutrin (Bupropion)" is already in another category
+      "Wellbutrin (Bupropion)",
     ],
   },
   {
@@ -211,7 +211,7 @@ export const MEDICATION_CATEGORIES = [
   {
     name: "أدوية إضافية للوسواس القهري",
     medications: [
-      "Anafranil (Clomipramine)", // Already in TCAs
+      "Anafranil (Clomipramine)",
       "Paxil CR (Paroxetine CR)",
       "Luvox CR (Fluvoxamine CR)",
     ],

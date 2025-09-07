@@ -148,7 +148,7 @@ export default function NewPatientPage() {
                         <FormItem>
                           <FormLabel>العمر</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="مثال: 35" {...field} className="text-base" value={field.value || ''} />
+                            <Input type="number" placeholder="مثال: 35" {...field} className="text-base" onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value, 10))} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
