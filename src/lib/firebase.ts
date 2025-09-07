@@ -1,8 +1,6 @@
 import { initializeApp, getApps, App } from "firebase-admin/app";
 import { credential } from "firebase-admin";
 
-require('dotenv').config();
-
 let app: App;
 
 export function initializeFirebase(): App {
