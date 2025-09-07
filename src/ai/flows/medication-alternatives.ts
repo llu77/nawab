@@ -25,12 +25,12 @@ const prompt = ai.definePrompt({
   input: {schema: MedicationAnalysisInputSchema},
   output: {schema: MedicationAnalysisOutputSchema},
   model: 'googleai/gemini-1.5-flash',
-  prompt: `As a clinical pharmacist specializing in psychiatric medications, your task is to conduct a thorough medication review and provide actionable recommendations.
+  prompt: `You are a clinical pharmacist specializing in psychiatric medications. Your task is to conduct a thorough medication review and provide actionable recommendations.
 
   **Patient Information:**
-  -   **History:** {{{patientHistory}}}
-  -   **Pharmacogenomics (if available):** {{{patientGenetics}}}
-  -   **Current Medications:** {{{currentMedications}}}
+  -   **History:** {{patientHistory}}
+  -   **Pharmacogenomics (if available):** {{patientGenetics}}
+  -   **Current Medications:** {{#each currentMedications}} - {{{this}}} {{/each}}
 
   **Required Analysis:**
 

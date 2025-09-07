@@ -8,9 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MEDICATION_CATEGORIES } from "@/lib/medications";
 import { DIAGNOSIS_CATEGORIES } from "@/lib/diagnoses";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { AlertTriangle, Pill, BookOpen } from "lucide-react";
+import { AlertTriangle, Pill, BookOpen, Loader, Bot, FileText, FlaskConical, Stethoscope } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { runMedicationAnalysisAction } from "@/app/actions";
+import type { MedicationAnalysisOutput } from "@/ai/flows/schemas";
+import { Separator } from "@/components/ui/separator";
 
 type MedicationOption = {
   value: string;
@@ -28,91 +33,169 @@ const allMedications: MedicationOption[] = MEDICATION_CATEGORIES.flatMap(categor
 
 export default function MedicationPage() {
   const [selectedMeds, setSelectedMeds] = useState<string[]>([]);
+  const [analysisResult, setAnalysisResult] = useState<MedicationAnalysisOutput | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  // Simple interaction logic placeholder
-  const getInteractionAlert = (meds: string[]) => {
-    if (meds.length < 2) {
-      return null;
+  const handleAnalyze = async () => {
+    if (selectedMeds.length < 2) {
+      toast({
+        title: "أدوية غير كافية",
+        description: "يرجى اختيار دواءين على الأقل لبدء التحليل.",
+        variant: "destructive"
+      });
+      return;
     }
-    // Dummy logic: check for SSRI + MAOI interaction
-    const hasSSRI = meds.some(m => m.includes("Prozac") || m.includes("Zoloft"));
-    const hasMAOI = meds.some(m => m.includes("Nardil") || m.includes("Parnate"));
-    if (hasSSRI && hasMAOI) {
-      return {
-        severity: "خطر",
-        message: "خطر متلازمة السيروتونين. يجب تجنب هذه التركيبة.",
-      };
-    }
-    if (meds.some(m => m.includes("Lithium")) && meds.some(m => m.includes("Prozac"))) {
-        return {
-            severity: "متوسط",
-            message: "قد يزيد Prozac من مستويات الليثيوم. يوصى بالمراقبة الدقيقة.",
-        }
-    }
-    if (meds.length > 2) {
-        return {
-            severity: "منخفض",
-            message: "تزداد احتمالية التفاعلات الدوائية مع زيادة عدد الأدوية. يوصى بمراجعة صيدلانية شاملة.",
-        }
-    }
-    return null;
-  };
+    
+    setIsLoading(true);
+    setAnalysisResult(null);
+    toast({
+      title: "بدء التحليل الدوائي",
+      description: "يقوم الصيدلي الإكلينيكي الافتراضي بمراجعة الأدوية المختارة..."
+    });
 
-  const interactionAlert = getInteractionAlert(selectedMeds);
+    try {
+      const result = await runMedicationAnalysisAction({
+        currentMedications: selectedMeds,
+        patientHistory: "General analysis without specific patient history.",
+        patientGenetics: "",
+      });
+
+      if (result) {
+        setAnalysisResult(result);
+        toast({ title: "اكتمل التحليل", description: "تم استلام تقرير الصيدلي الإكلينيكي بنجاح." });
+      } else {
+        throw new Error("AI analysis returned no result.");
+      }
+
+    } catch (error) {
+      console.error("Medication analysis failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+      toast({
+          title: "خطأ في التحليل",
+          description: `فشلت المعالجة: ${errorMessage}`,
+          variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <>
       <PageHeader
-        title="إدارة الأدوية"
-        description="هنا يمكنك البحث عن الأدوية، التحقق من التفاعلات، والحصول على معلومات دوائية."
+        title="الصيدلي الإكلينيكي"
+        description="أداة تحليل دوائي متقدمة لفحص التفاعلات، اقتراح البدائل، ووضع خطط المراقبة."
       />
       <Tabs defaultValue="interactions">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="interactions">فحص التفاعلات</TabsTrigger>
+          <TabsTrigger value="interactions">التحليل الدوائي</TabsTrigger>
           <TabsTrigger value="med-list">قائمة الأدوية</TabsTrigger>
           <TabsTrigger value="diagnoses">قائمة التشخيصات</TabsTrigger>
         </TabsList>
         <TabsContent value="interactions">
-          <Card>
-            <CardContent className="pt-6 space-y-6">
-                <div>
-                    <h3 className="text-lg font-semibold mb-2">مدقق التفاعلات الدوائية</h3>
-                    <p className="text-sm text-muted-foreground mb-4">اختر دواءين أو أكثر للتحقق من وجود تفاعلات محتملة. سيتم ربط هذه الميزة بالنموذج رقم 6 (الصيدلي الإكلينيكي) مستقبلاً.</p>
-                    <MultiSelect
-                        options={allMedications}
-                        selected={selectedMeds}
-                        onChange={setSelectedMeds}
-                        placeholder="ابحث واختر من قائمة الأدوية..."
-                    />
-                </div>
-                {interactionAlert && (
-                    <div className={`p-4 rounded-md flex items-start gap-3 ${interactionAlert.severity === 'خطر' ? 'bg-destructive/10 border border-destructive/20' : 'bg-yellow-100/80 dark:bg-yellow-900/40 border border-yellow-200/80 dark:border-yellow-800/60'}`}>
-                        <AlertTriangle className={`mt-1 flex-shrink-0 ${interactionAlert.severity === 'خطر' ? 'text-destructive' : 'text-yellow-600 dark:text-yellow-400'}`} />
-                        <div>
-                            <p className={`font-bold ${interactionAlert.severity === 'خطر' ? 'text-destructive' : 'text-yellow-800 dark:text-yellow-200'}`}>
-                                تنبيه - مستوى التفاعل: {interactionAlert.severity}
-                            </p>
-                            <p className={`text-sm mt-1 ${interactionAlert.severity === 'خطر' ? 'text-destructive/90' : 'text-yellow-700 dark:text-yellow-300'}`}>
-                                {interactionAlert.message}
-                            </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><FlaskConical /> مدخلات التحليل</CardTitle>
+                <CardDescription>اختر الأدوية التي ترغب في تحليلها، ثم اضغط على زر التحليل.</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-6">
+                  <div>
+                      <h3 className="text-lg font-semibold mb-2">الأدوية الحالية</h3>
+                      <p className="text-sm text-muted-foreground mb-4">اختر دواءين أو أكثر لتشغيل وكيل الصيدلة الإكلينيكية.</p>
+                      <MultiSelect
+                          options={allMedications}
+                          selected={selectedMeds}
+                          onChange={setSelectedMeds}
+                          placeholder="ابحث واختر من قائمة الأدوية..."
+                      />
+                  </div>
+                  <Button onClick={handleAnalyze} disabled={isLoading || selectedMeds.length < 1} className="w-full" size="lg">
+                    {isLoading ? (
+                      <>
+                        <Loader className="ml-2 h-5 w-5 animate-spin" />
+                        جاري التحليل...
+                      </>
+                    ) : (
+                      <>
+                        <Bot className="ml-2 h-5 w-5" />
+                        تحليل التفاعلات والبدائل
+                      </>
+                    )}
+                  </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><FileText /> تقرير الصيدلي الإكلينيكي</CardTitle>
+                  <CardDescription>نتائج التحليل تظهر هنا بعد اكتمال العملية.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                  {isLoading && (
+                      <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-10">
+                          <Loader className="h-10 w-10 animate-spin text-primary" />
+                          <p className="mt-4">يقوم الوكيل بتحليل البيانات...</p>
+                      </div>
+                  )}
+                  {analysisResult ? (
+                      <ScrollArea className="h-[60vh] pr-4">
+                        <div className="space-y-6">
+                          {analysisResult.drugInteractions.length > 0 && (
+                            <div>
+                              <h4 className="font-semibold mb-2 text-base text-destructive flex items-center gap-2"><AlertTriangle /> تفاعلات دوائية</h4>
+                              <div className="space-y-3">
+                                {analysisResult.drugInteractions.map((interaction, i) => (
+                                  <div key={i} className="p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                                    <p className="font-bold">{interaction.drug1} + {interaction.drug2}</p>
+                                    <Badge variant="destructive" className="my-1">{interaction.severity}</Badge>
+                                    <p className="text-sm text-destructive/90">{interaction.clinicalSignificance}</p>
+                                    <p className="text-sm mt-1"><strong>التوصية:</strong> {interaction.recommendation}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {analysisResult.alternatives.length > 0 && (
+                             <div>
+                              <h4 className="font-semibold mb-2 text-base flex items-center gap-2"><Pill /> بدائل مقترحة</h4>
+                               <div className="space-y-2">
+                                {analysisResult.alternatives.map((alt, i) => (
+                                    <div key={i} className="p-3 rounded-md bg-secondary">
+                                      <p className="font-bold text-primary">{alt.medication}</p>
+                                      <p className="text-sm text-muted-foreground">{alt.rationale}</p>
+                                    </div>
+                                ))}
+                               </div>
+                            </div>
+                          )}
+                          {analysisResult.monitoringPlan.length > 0 && (
+                            <div>
+                              <h4 className="font-semibold mb-2 text-base flex items-center gap-2"><Stethoscope /> خطة المراقبة</h4>
+                               <ul className="list-disc pr-5 space-y-1 text-sm text-muted-foreground">
+                                  {analysisResult.monitoringPlan.map((plan, i) => <li key={i}><strong>{plan.parameter}:</strong> {plan.frequency}</li>)}
+                               </ul>
+                            </div>
+                          )}
+                           <Separator />
+                           <div>
+                              <h4 className="font-semibold mb-2 text-base">ملاحظات الصيدلي</h4>
+                              <p className="text-sm text-muted-foreground p-3 bg-secondary/50 rounded-md whitespace-pre-wrap">{analysisResult.pharmacistNotes}</p>
+                           </div>
                         </div>
-                    </div>
-                )}
-                 {selectedMeds.length > 0 && !interactionAlert && (
-                    <div className="p-4 rounded-md bg-green-50 dark:bg-green-900/40 border border-green-200 dark:border-green-800/60 flex items-start gap-3">
-                        <Pill className="mt-1 flex-shrink-0 text-green-600" />
-                         <div>
-                            <p className="font-bold text-green-800 dark:text-green-200">
-                                لا توجد تفاعلات خطيرة مسجلة
-                            </p>
-                            <p className="text-sm mt-1 text-green-700 dark:text-green-300">
-                                لم يتم العثور على تفاعلات دوائية كبيرة بين الأدوية المختارة بناءً على قاعدة البيانات الحالية.
-                            </p>
-                        </div>
-                    </div>
-                )}
-            </CardContent>
-          </Card>
+                      </ScrollArea>
+                  ) : (
+                      !isLoading && (
+                          <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-10">
+                              <Bot className="h-12 w-12" />
+                              <p className="mt-4 text-center">النتائج ستظهر هنا بعد تشغيل التحليل.</p>
+                          </div>
+                      )
+                  )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         <TabsContent value="med-list">
           <Card>

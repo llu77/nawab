@@ -4,13 +4,16 @@
 import { orchestratorAgent } from "@/ai/flows/orchestrator-agent";
 import { generateSummary } from "@/ai/flows/ai-summary-generator";
 import { performIntegratedAnalysis } from "@/ai/flows/integrated-analysis";
+import { getMedicationAnalysis } from "@/ai/flows/medication-alternatives";
 import { 
     OrchestratorInputSchema, 
     SummaryInputSchema,
-    IntegratedAnalysisInputSchema, 
+    IntegratedAnalysisInputSchema,
+    MedicationAnalysisInputSchema,
     type OrchestratorInput, 
     type SummaryInput,
-    type IntegratedAnalysisInput
+    type IntegratedAnalysisInput,
+    type MedicationAnalysisInput
 } from "@/ai/flows/schemas";
 
 /**
@@ -82,3 +85,21 @@ export async function runIntegratedAnalysisAction(input: IntegratedAnalysisInput
     }
 }
 
+/**
+ * Server action to run the medication analysis flow.
+ */
+export async function runMedicationAnalysisAction(input: MedicationAnalysisInput) {
+    try {
+        const validatedInput = MedicationAnalysisInputSchema.parse(input);
+        console.log("Server Action: Running medication analysis with validated input:", validatedInput);
+        const result = await getMedicationAnalysis(validatedInput);
+        console.log("Server Action: Medication analysis completed with result:", result);
+        return JSON.parse(JSON.stringify(result));
+    } catch (error) {
+        console.error("Error running medication analysis action:", error);
+        if (error instanceof Error) {
+            throw new Error(`Failed to execute medication analysis: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred during medication analysis.");
+    }
+}
