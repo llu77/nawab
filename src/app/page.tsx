@@ -37,7 +37,7 @@ const quickAccessTools = [
     title: "مساعد التشخيص",
     description: "تحليل الملاحظات للتشخيص.",
     icon: BrainCircuit,
-    href: "/diagnosis",
+    href: "/new-patient",
   },
   {
     title: "الأدوية",
@@ -49,7 +49,7 @@ const quickAccessTools = [
     title: "تقييم المخاطر",
     description: "توقع الانتكاس ومخاطر أخرى.",
     icon: ShieldAlert,
-    href: "/risk-assessment",
+    href: "/patients",
   },
   {
     title: "التلخيص",
@@ -76,7 +76,7 @@ export default function DashboardPage() {
         let riskCount = 0;
         storedList.forEach((patient: Patient) => {
             const result = JSON.parse(localStorage.getItem(`patient_results_${patient.id}`) || '{}');
-            if (result?.relapsePrediction?.relapseProbability > 70) {
+            if (result?.initialAnalysis?.relapsePrediction?.relapseProbability > 70) {
                 riskCount++;
             }
         });
@@ -144,7 +144,7 @@ export default function DashboardPage() {
                         <TableBody>
                             {patientList.slice(-5).reverse().map((patient) => {
                                 const result = JSON.parse(localStorage.getItem(`patient_results_${patient.id}`) || '{}');
-                                const risk = result?.relapsePrediction?.relapseProbability || 0;
+                                const risk = result?.initialAnalysis?.relapsePrediction?.relapseProbability || 0;
                                 return (
                                 <TableRow key={patient.id}>
                                     <TableCell className="font-medium">{patient.name}</TableCell>
