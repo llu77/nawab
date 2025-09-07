@@ -27,7 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DIAGNOSIS_CATEGORIES } from "@/lib/diagnoses";
 
 const riskFormSchema = z.object({
-  expectedDiagnosis: z.string().optional(),
+  expectedDiagnosis: z.string().min(1, "Please select an expected diagnosis."),
   behavioralPatterns: z.string().min(100, "Please provide detailed behavioral patterns (at least 100 characters)."),
   patientHistory: z.string().min(50, "Please provide patient history (at least 50 characters)."),
   riskFactors: z.string().min(20, "Please list relevant risk factors."),
@@ -53,9 +53,7 @@ export default function RiskAssessmentPage() {
     setResult(null);
 
     // Enrich history with expected diagnosis if provided
-    const patientHistory = values.expectedDiagnosis 
-      ? `${values.patientHistory}\n\nExpected Diagnosis: ${values.expectedDiagnosis}`
-      : values.patientHistory;
+    const patientHistory = `${values.patientHistory}\n\nExpected Diagnosis: ${values.expectedDiagnosis}`;
 
     const response = await getRelapsePrediction({
       behavioralPatterns: values.behavioralPatterns,
@@ -108,7 +106,7 @@ export default function RiskAssessmentPage() {
                     name="expectedDiagnosis"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>التشخيص المتوقع (اختياري)</FormLabel>
+                        <FormLabel>التشخيص المتوقع</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger className="text-base">

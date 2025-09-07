@@ -23,16 +23,16 @@ import { useToast } from "@/hooks/use-toast";
 import { suggestAlternatives } from "./actions";
 import { PageHeader } from "@/components/page-header";
 import type { MedicationAnalysisOutput } from "@/ai/flows/schemas";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { MEDICATION_CATEGORIES } from "@/lib/medications";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const medicationFormSchema = z.object({
   patientHistory: z.string().min(20, "Please provide a more detailed patient history."),
   patientGenetics: z.string().optional(),
-  currentMedications: z.array(z.string()).min(1, "Please select at least one medication."),
+  currentMedication: z.string().min(1, "Please select at least one medication."),
 });
 
 export default function MedicationPage() {
@@ -45,7 +45,7 @@ export default function MedicationPage() {
     defaultValues: {
       patientHistory: "",
       patientGenetics: "",
-      currentMedications: [],
+      currentMedication: "",
     },
   });
 
@@ -56,7 +56,7 @@ export default function MedicationPage() {
     const response = await suggestAlternatives({
       patientHistory: values.patientHistory,
       patientGenetics: values.patientGenetics || "Not provided",
-      currentMedications: values.currentMedications.join(', '),
+      currentMedications: values.currentMedication,
     });
 
     setIsLoading(false);
@@ -71,14 +71,6 @@ export default function MedicationPage() {
       });
     }
   }
-  
-  const medicationOptions = MEDICATION_CATEGORIES.flatMap(category =>
-    category.medications.map(medication => ({
-      value: medication,
-      label: medication,
-      group: category.name,
-    }))
-  );
 
   const getInteractionSeverityBadge = (severity: string) => {
     switch (severity) {
@@ -109,19 +101,28 @@ export default function MedicationPage() {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <FormField
                     control={form.control}
-                    name="currentMedications"
+                    name="currentMedication"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>الأدوية الحالية</FormLabel>
-                        <FormControl>
-                          <MultiSelect
-                            options={medicationOptions}
-                            selected={field.value}
-                            onChange={field.onChange}
-                            placeholder="اختر الأدوية الحالية..."
-                            className="text-base"
-                           />
-                        </FormControl>
+                        <FormLabel>الدواء الحالي</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="text-base">
+                                <SelectValue placeholder="اختر الدواء الحالي..."/>
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {MEDICATION_CATEGORIES.map((category) => (
+                                <optgroup label={category.name} key={category.name} className="font-semibold p-2">
+                                  {category.medications.map((medication) => (
+                                    <SelectItem key={medication} value={medication} className="font-normal">
+                                      {medication}
+                                    </SelectItem>
+                                  ))}
+                                </optgroup>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         <FormMessage />
                       </FormItem>
                     )}

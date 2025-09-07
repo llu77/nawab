@@ -26,12 +26,12 @@ import { getDiagnosis } from "./actions";
 import { PageHeader } from "@/components/page-header";
 import { SYMPTOM_CATEGORIES } from "@/lib/symptoms";
 import type { DiagnosePatientOutput } from "@/ai/flows/schemas";
-import { MultiSelect } from "@/components/ui/multi-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const diagnosisFormSchema = z.object({
   patientHistory: z.string().min(50, "Please provide a more detailed patient history (at least 50 characters)."),
   sessionNotes: z.string().min(100, "Please provide more detailed session notes (at least 100 characters)."),
-  symptoms: z.array(z.string()).min(3, "Please select at least 3 symptoms.").max(10, "Please select no more than 10 symptoms."),
+  symptom: z.string().min(1, "Please select a primary symptom."),
 });
 
 export default function DiagnosisPage() {
@@ -44,18 +44,9 @@ export default function DiagnosisPage() {
     defaultValues: {
       patientHistory: "",
       sessionNotes: "",
-      symptoms: [],
+      symptom: "",
     },
   });
-
-  const symptomOptions = SYMPTOM_CATEGORIES.flatMap(category =>
-    category.symptoms.map(symptom => ({
-      value: symptom,
-      label: symptom,
-      group: category.name,
-    }))
-  );
-
 
   async function onSubmit(values: z.infer<typeof diagnosisFormSchema>) {
     setIsLoading(true);
@@ -63,7 +54,7 @@ export default function DiagnosisPage() {
     
     const sessionNotesArray = values.sessionNotes.split('\n').filter(note => note.trim() !== '');
     
-    const enrichedPatientHistory = `${values.patientHistory}\n\nSelected Symptoms:\n- ${values.symptoms.join('\n- ')}`;
+    const enrichedPatientHistory = `${values.patientHistory}\n\nSelected Symptom:\n- ${values.symptom}`;
 
     const response = await getDiagnosis({
         patientHistory: enrichedPatientHistory,
@@ -118,20 +109,29 @@ export default function DiagnosisPage() {
                   
                    <FormField
                     control={form.control}
-                    name="symptoms"
+                    name="symptom"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>الأعراض</FormLabel>
-                        <FormControl>
-                          <MultiSelect
-                            options={symptomOptions}
-                            selected={field.value}
-                            onChange={field.onChange}
-                            placeholder="اختر الأعراض..."
-                            className="text-base"
-                           />
-                        </FormControl>
-                        <FormDescription>اختر من 3 إلى 10 أعراض لوصف حالة المريض.</FormDescription>
+                        <FormLabel>العرض الرئيسي</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="text-base">
+                              <SelectValue placeholder="اختر العرض الرئيسي..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                             {SYMPTOM_CATEGORIES.map((category) => (
+                                <optgroup label={category.name} key={category.name} className="font-semibold p-2">
+                                  {category.symptoms.map((symptom) => (
+                                    <SelectItem key={symptom} value={symptom} className="font-normal">
+                                      {symptom}
+                                    </SelectItem>
+                                  ))}
+                                </optgroup>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>اختر العرض الأكثر بروزاً لوصف حالة المريض.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

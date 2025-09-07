@@ -159,7 +159,6 @@ export const MEDICATION_CATEGORIES = [
       "Intuniv (Guanfacine)",
       "Kapvay (Clonidine)",
       "Qelbree (Viloxazine)",
-      "Wellbutrin (Bupropion)",
     ],
   },
   {
@@ -243,7 +242,7 @@ export const MEDICATION_CATEGORIES = [
     name: "أدوية أخرى مهمة",
     medications: [
       "Modafinil (Provigil)",
-      "Armodafinil (Nuviigil)",
+      "Armodafinil (Nuvigil)",
       "Ketamine (Ketalar)",
       "Prazosin (Minipress)",
       "Catapres (Clonidine)",

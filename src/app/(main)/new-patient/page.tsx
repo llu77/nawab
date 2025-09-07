@@ -26,7 +26,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { SYMPTOM_CATEGORIES } from "@/lib/symptoms";
 import { MEDICATION_CATEGORIES } from "@/lib/medications";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { registerPatient } from "./actions";
 
 const newPatientFormSchema = z.object({
@@ -34,8 +33,8 @@ const newPatientFormSchema = z.object({
   age: z.coerce.number().min(1, "العمر مطلوب.").max(120, "يرجى إدخال عمر صحيح."),
   gender: z.string().min(1, "الجنس مطلوب."),
   patientHistory: z.string().min(20, "يرجى تقديم نبذة تاريخية لا تقل عن 20 حرفًا."),
-  symptoms: z.array(z.string()).min(3, "الرجاء اختيار 3 أعراض على الأقل.").max(10, "الرجاء اختيار 10 أعراض على الأكثر."),
-  currentMedications: z.array(z.string()).optional(),
+  symptom: z.string().min(1, "الرجاء اختيار عرض رئيسي واحد."),
+  currentMedication: z.string().optional(),
   addictionHistory: z.boolean().default(false),
   addictionDetails: z.string().optional(),
   familyHistory: z.boolean().default(false),
@@ -59,8 +58,8 @@ export default function NewPatientPage() {
       age: undefined,
       gender: "",
       patientHistory: "",
-      symptoms: [],
-      currentMedications: [],
+      symptom: "",
+      currentMedication: "",
       addictionHistory: false,
       addictionDetails: "",
       familyHistory: false,
@@ -71,26 +70,17 @@ export default function NewPatientPage() {
   const watchAddictionHistory = form.watch("addictionHistory");
   const watchFamilyHistory = form.watch("familyHistory");
 
-  const symptomOptions = SYMPTOM_CATEGORIES.flatMap(category =>
-    category.symptoms.map(symptom => ({
-      value: symptom,
-      label: symptom,
-      group: category.name,
-    }))
-  );
-
-  const medicationOptions = MEDICATION_CATEGORIES.flatMap(category =>
-    category.medications.map(medication => ({
-      value: medication,
-      label: medication,
-      group: category.name,
-    }))
-  );
-
   async function onSubmit(values: z.infer<typeof newPatientFormSchema>) {
     setIsLoading(true);
     
-    const response = await registerPatient(values);
+    // This is a workaround because the AI flow expects an array for symptoms and medications
+    const submissionValues = {
+      ...values,
+      symptoms: values.symptom ? [values.symptom] : [],
+      currentMedications: values.currentMedication ? [values.currentMedication] : [],
+    }
+
+    const response = await registerPatient(submissionValues);
     
     setIsLoading(false);
 
@@ -196,20 +186,29 @@ export default function NewPatientPage() {
                     />
                   <FormField
                     control={form.control}
-                    name="symptoms"
+                    name="symptom"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>الأعراض الرئيسية (3-10 أعراض)</FormLabel>
-                        <FormControl>
-                           <MultiSelect
-                            options={symptomOptions}
-                            selected={field.value}
-                            onChange={field.onChange}
-                            placeholder="ابحث أو اختر الأعراض..."
-                            className="text-base"
-                           />
-                        </FormControl>
-                        <FormDescription>حدد الأعراض الرئيسية التي يشتكي منها المريض حاليًا.</FormDescription>
+                        <FormLabel>العرض الرئيسي</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="text-base">
+                                <SelectValue placeholder="ابحث أو اختر العرض..."/>
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                               {SYMPTOM_CATEGORIES.map((category) => (
+                                <optgroup label={category.name} key={category.name} className="font-semibold p-2">
+                                  {category.symptoms.map((symptom) => (
+                                    <SelectItem key={symptom} value={symptom} className="font-normal">
+                                      {symptom}
+                                    </SelectItem>
+                                  ))}
+                                </optgroup>
+                              ))}
+                            </SelectContent>
+                        </Select>
+                        <FormDescription>حدد العرض الرئيسي الذي يشتكي منه المريض حاليًا.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -217,20 +216,29 @@ export default function NewPatientPage() {
                   
                   <FormField
                     control={form.control}
-                    name="currentMedications"
+                    name="currentMedication"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>الأدوية السابقة/الحالية (اختياري)</FormLabel>
-                        <FormControl>
-                           <MultiSelect
-                            options={medicationOptions}
-                            selected={field.value || []}
-                            onChange={field.onChange}
-                            placeholder="ابحث أو اختر الأدوية..."
-                            className="text-base"
-                           />
-                        </FormControl>
-                         <FormDescription>يمكنك اختيار أدوية متعددة من القائمة.</FormDescription>
+                        <FormLabel>الدواء السابق/الحالي (اختياري)</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="text-base">
+                                <SelectValue placeholder="ابحث أو اختر الدواء..."/>
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                               {MEDICATION_CATEGORIES.map((category) => (
+                                <optgroup label={category.name} key={category.name} className="font-semibold p-2">
+                                  {category.medications.map((med) => (
+                                    <SelectItem key={med} value={med} className="font-normal">
+                                      {med}
+                                    </SelectItem>
+                                  ))}
+                                </optgroup>
+                              ))}
+                            </SelectContent>
+                        </Select>
+                         <FormDescription>اختر دواءً واحدًا من القائمة.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
