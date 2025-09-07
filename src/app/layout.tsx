@@ -3,6 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { Tajawal, Space_Grotesk } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarNav } from "@/components/layout/sidebar-nav";
 
 export const metadata: Metadata = {
   title: 'NawabMD',
@@ -30,7 +32,14 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={cn("font-body antialiased", tajawal.variable, spaceGrotesk.variable)}>
-        {children}
+        <SidebarProvider>
+          <div className="flex min-h-screen">
+            <SidebarNav />
+            <main className="flex-1 p-6 sm:p-8 md:p-10">
+              {children}
+            </main>
+          </div>
+        </SidebarProvider>
         <Toaster />
       </body>
     </html>
