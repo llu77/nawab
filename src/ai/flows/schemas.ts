@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 
 /**
@@ -206,5 +205,3 @@ export const IntegratedAnalysisOutputSchema = z.object({
     requiresManualReview: z.boolean().describe("A flag indicating if the case has conflicts or low confidence, requiring manual review."),
 });
 export type IntegratedAnalysisOutput = z.infer<typeof IntegratedAnalysisOutputSchema>;
-
-    

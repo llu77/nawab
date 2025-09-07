@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -29,22 +28,28 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Loader } from "lucide-react";
 import { runOrchestratorAction } from "@/app/actions";
+import { OrchestratorInputSchema } from "@/ai/flows/schemas";
 
-// Zod schema for validation, aligned with OrchestratorInputSchema
-const assessmentSchema = z.object({
-  name: z.string().optional(),
-  age: z.coerce.number({ invalid_type_error: "يجب أن يكون العمر رقمًا" }).min(1, "العمر مطلوب"),
-  gender: z.enum(["male", "female"], {
-    required_error: "يجب تحديد الجنس",
-  }),
-  mainSymptom: z.string().min(1, "يجب اختيار عرض رئيسي واحد على الأقل"),
-  patientHistory: z.string().optional(), // Now optional
-  hasSubstanceUse: z.boolean().default(false),
-  substanceDetails: z.string().optional(),
-  hasMedicationHistory: z.boolean().default(false),
-  medicationDetails: z.string().optional(),
-  hasFamilyHistory: z.boolean().default(false),
-  familyHistoryDetails: z.string().optional(),
+// Align the client-side schema with the OrchestratorInputSchema by picking fields
+const assessmentSchema = OrchestratorInputSchema.pick({
+    name: true,
+    age: true,
+    gender: true,
+    patientHistory: true,
+    addictionHistory: true,
+    addictionDetails: true,
+    familyHistory: true,
+    familyHistoryDetails: true,
+}).extend({
+    // Add client-specific fields
+    mainSymptom: z.string().min(1, "يجب اختيار عرض رئيسي واحد على الأقل"),
+    medicationDetails: z.string().optional(),
+}).refine(data => !data.addictionHistory || (data.addictionHistory && data.addictionDetails), {
+    message: "يرجى تقديم تفاصيل عن استخدام المواد.",
+    path: ["addictionDetails"],
+}).refine(data => !data.familyHistory || (data.familyHistory && data.familyHistoryDetails), {
+    message: "يرجى تقديم تفاصيل عن التاريخ العائلي.",
+    path: ["familyHistoryDetails"],
 });
 
 
@@ -64,15 +69,14 @@ export default function NewPatientPage() {
     defaultValues: {
         name: "",
         age: undefined,
-        gender: undefined,
+        gender: "male",
         mainSymptom: "",
         patientHistory: "Initial assessment, no detailed history provided yet.",
-        hasSubstanceUse: false,
-        substanceDetails: "",
-        hasMedicationHistory: false,
-        medicationDetails: "",
-        hasFamilyHistory: false,
+        addictionHistory: false,
+        addictionDetails: "",
+        familyHistory: false,
         familyHistoryDetails: "",
+        medicationDetails: "",
     }
   });
 
@@ -90,11 +94,11 @@ export default function NewPatientPage() {
         age: values.age,
         gender: values.gender,
         patientHistory: values.patientHistory || "No detailed history provided.",
-        symptoms: [values.mainSymptom], // Starting with the main symptom
+        symptoms: [values.mainSymptom],
         currentMedications: values.medicationDetails ? [values.medicationDetails] : [],
-        addictionHistory: values.hasSubstanceUse,
-        addictionDetails: values.substanceDetails,
-        familyHistory: values.hasFamilyHistory,
+        addictionHistory: values.addictionHistory,
+        addictionDetails: values.addictionDetails,
+        familyHistory: values.familyHistory,
         familyHistoryDetails: values.familyHistoryDetails,
       };
 
@@ -107,7 +111,7 @@ export default function NewPatientPage() {
         variant: "default",
       });
 
-      // Redirect to the patient's result page (you'll build this next)
+      // Redirect to the patient's result page
       router.push(`/patients/${patientId}`);
 
     } catch (error) {
@@ -243,10 +247,9 @@ export default function NewPatientPage() {
                     <p className="text-sm text-muted-foreground">أجب عن الأسئلة التالية للمساعدة في دقة التحليل.</p>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    {/* Substance Use */}
                      <FormField
                         control={form.control}
-                        name="hasSubstanceUse"
+                        name="addictionHistory"
                         render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                             <div className="space-y-0.5">
@@ -264,10 +267,10 @@ export default function NewPatientPage() {
                         </FormItem>
                         )}
                     />
-                    {form.watch("hasSubstanceUse") && (
+                    {form.watch("addictionHistory") && (
                          <FormField
                             control={form.control}
-                            name="substanceDetails"
+                            name="addictionDetails"
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>اذكر تفاصيل المواد المستخدمة</FormLabel>
@@ -285,49 +288,31 @@ export default function NewPatientPage() {
 
                     <Separator />
                     
-                    {/* Medication History */}
                     <FormField
                         control={form.control}
-                        name="hasMedicationHistory"
+                        name="medicationDetails"
                         render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                            <FormLabel className="text-base">هل يتناول المريض أدوية نفسية حالياً أو سابقاً؟</FormLabel>
-                            </div>
+                        <FormItem>
+                            <FormLabel>الأدوية النفسية الحالية أو السابقة</FormLabel>
+                             <FormDescription>
+                                اذكر الأدوية، الجرعات، والمدة إن وجدت.
+                            </FormDescription>
                             <FormControl>
-                            <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
+                            <Textarea
+                                placeholder="مثال: Zoloft 50mg لمدة سنة، توقف بسبب الآثار الجانبية."
+                                {...field}
                             />
                             </FormControl>
+                            <FormMessage />
                         </FormItem>
                         )}
                     />
-                     {form.watch("hasMedicationHistory") && (
-                         <FormField
-                            control={form.control}
-                            name="medicationDetails"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>اذكر الأدوية، الجرعات، والمدة</FormLabel>
-                                <FormControl>
-                                <Textarea
-                                    placeholder="مثال: Zoloft 50mg لمدة سنة، توقف بسبب الآثار الجانبية."
-                                    {...field}
-                                />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                    )}
 
                     <Separator />
 
-                    {/* Family History */}
                     <FormField
                         control={form.control}
-                        name="hasFamilyHistory"
+                        name="familyHistory"
                         render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                             <div className="space-y-0.5">
@@ -342,7 +327,7 @@ export default function NewPatientPage() {
                         </FormItem>
                         )}
                     />
-                    {form.watch("hasFamilyHistory") && (
+                    {form.watch("familyHistory") && (
                          <FormField
                             control={form.control}
                             name="familyHistoryDetails"
@@ -383,5 +368,3 @@ export default function NewPatientPage() {
     </>
   );
 }
-
-    

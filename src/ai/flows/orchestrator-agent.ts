@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -14,20 +13,13 @@ import { diagnosePatient } from './diagnosis-assistant';
 import { predictRelapseProbability } from './relapse-prediction';
 import { generateSummary, type SummaryInput } from './ai-summary-generator';
 import { 
-    DiagnosePatientOutputSchema, 
-    RelapsePredictionOutputSchema, 
-    SummaryOutputSchema, 
+    OrchestratorInputSchema,
+    OrchestratorOutputSchema,
     type DiagnosePatientInput, 
     type RelapsePredictionInput,
-    OrchestratorInputSchema,
     type OrchestratorInput,
-    OrchestratorOutputSchema,
     type OrchestratorOutput
 } from './schemas';
-
-
-export { type OrchestratorInput, type OrchestratorOutput, OrchestratorOutputSchema };
-
 
 export async function orchestratorAgent(input: OrchestratorInput): Promise<OrchestratorOutput> {
     return orchestratorAgentFlow(input);
@@ -111,5 +103,3 @@ const orchestratorAgentFlow = ai.defineFlow(
     return results;
   }
 );
-
-    
