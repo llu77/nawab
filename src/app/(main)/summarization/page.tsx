@@ -209,7 +209,7 @@ export default function SummarizationPage() {
                                     <ul className="list-decimal pl-5 space-y-1 text-sm text-muted-foreground">
                                         {result.pendingDecisions.map((d, index) => <li key={index}>{d}</li>)}
                                     </ul>
-                                </div>
+                                 </div>
                             </CardContent>
                         </Card>
                     </div>
