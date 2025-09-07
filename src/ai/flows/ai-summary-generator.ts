@@ -27,10 +27,10 @@ const prompt = ai.definePrompt({
   Source Data:
 
   Session Notes:
-  {{{sessionNotes}}}
+  {{sessionNotes}}
 
   Patient Data:
-  {{{patientData}}}
+  {{patientData}}
 
   **Instructions:**
 
