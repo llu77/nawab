@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { Tajawal, Space_Grotesk } from 'next/font/google';
+import { Tajawal, Space_Grotesk, Amiri } from 'next/font/google';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
@@ -21,6 +21,12 @@ const spaceGrotesk = Space_Grotesk({
   variable: '--font-space-grotesk',
 });
 
+const amiri = Amiri({
+  subsets: ['arabic'],
+  weight: ['400', '700'],
+  variable: '--font-amiri',
+});
+
 
 export default function RootLayout({
   children,
@@ -29,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body className={cn("font-body antialiased", tajawal.variable, spaceGrotesk.variable)}>
+      <body className={cn("font-body antialiased", tajawal.variable, spaceGrotesk.variable, amiri.variable)}>
         {children}
         <Toaster />
       </body>

@@ -11,6 +11,7 @@ module.exports = {
       fontFamily: {
         body: ['var(--font-tajawal)', 'sans-serif'],
         headline: ['var(--font-space-grotesk)', 'sans-serif'],
+        ruqaa: ['var(--font-amiri)', 'serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
