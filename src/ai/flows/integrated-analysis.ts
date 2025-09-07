@@ -27,27 +27,27 @@ const prompt = ai.definePrompt({
   prompt: `
     As a senior consultant psychiatrist, your task is to filter, organize, and synthesize information from multiple AI models to create a cohesive and actionable clinical picture.
 
-    You have received the following reports for patient ID: {{{patientId}}}
+    You have received the following reports for patient ID: {{patientId}}
 
     Initial Analysis Results:
     1.  **Diagnostic Hypotheses:**
         \`\`\`json
-        {{{json initialAnalysis.diagnosis}}}
+        {{json initialAnalysis.diagnosis}}
         \`\`\`
     2.  **Relapse Risk Prediction:**
         \`\`\`json
-        {{{json initialAnalysis.relapsePrediction}}}
+        {{json initialAnalysis.relapsePrediction}}
         \`\`\`
     3.  **Case Summary:**
         \`\`\`json
-        {{{json initialAnalysis.summary}}}
+        {{json initialAnalysis.summary}}
         \`\`\`
     
     {{#if doctorOverride}}
     **CRITICAL FEEDBACK FROM THE TREATING PHYSICIAN:**
     The attending physician has reviewed the initial analysis and provided the following override. You MUST take this into account as the primary source of truth, adjusting your diagnosis and plan accordingly.
     \`\`\`
-    {{{doctorOverride}}}
+    {{doctorOverride}}
     \`\`\`
     {{/if}}
 

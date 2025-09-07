@@ -26,8 +26,8 @@ const prompt = ai.definePrompt({
 Your task is to analyze the provided session notes and patient history to generate a differential diagnosis.
 
 **Source Data:**
--   **Session Notes:** {{#each sessionNotes}} - {{{this}}} {{/each}}
--   **Patient History & Symptoms:** {{{patientHistory}}}
+-   **Session Notes:** {{#each sessionNotes}} - {{this}} {{/each}}
+-   **Patient History & Symptoms:** {{patientHistory}}
 
 **Instructions:**
 1.  **Analyze Symptoms:** Carefully review all provided information, focusing on the primary symptoms, their duration, and severity.

@@ -27,9 +27,9 @@ const relapsePredictionPrompt = ai.definePrompt({
   Based on the provided data, determine the likelihood of relapse and provide a clear, evidence-based rationale.
 
   **Patient Data:**
-  -   **Behavioral Patterns:** {{{behavioralPatterns}}}
-  -   **Patient History:** {{{patientHistory}}}
-  -   **Specific Risk Factors:** {{{riskFactors}}}
+  -   **Behavioral Patterns:** {{behavioralPatterns}}
+  -   **Patient History:** {{patientHistory}}
+  -   **Specific Risk Factors:** {{riskFactors}}
 
   **Your Tasks:**
 

@@ -30,7 +30,7 @@ const prompt = ai.definePrompt({
   **Patient Information:**
   -   **History:** {{patientHistory}}
   -   **Pharmacogenomics (if available):** {{patientGenetics}}
-  -   **Current Medications:** {{#each currentMedications}} - {{{this}}} {{/each}}
+  -   **Current Medications:** {{#each currentMedications}} - {{this}} {{/each}}
 
   **Required Analysis:**
 
