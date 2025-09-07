@@ -25,10 +25,10 @@ import { SYMPTOM_CATEGORIES } from "@/lib/symptoms";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { orchestratorAgent } from "@/ai/flows/orchestrator-agent";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Loader } from "lucide-react";
+import { runOrchestratorAction } from "@/app/actions";
 
 // Zod schema for validation, aligned with OrchestratorInputSchema
 const assessmentSchema = z.object({
@@ -98,7 +98,7 @@ export default function NewPatientPage() {
         familyHistoryDetails: values.familyHistoryDetails,
       };
 
-      const result = await orchestratorAgent(orchestratorInput);
+      const result = await runOrchestratorAction(orchestratorInput);
       console.log("Orchestrator Result:", result);
 
       toast({
@@ -383,3 +383,5 @@ export default function NewPatientPage() {
     </>
   );
 }
+
+    

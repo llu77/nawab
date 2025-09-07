@@ -10,7 +10,6 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
 import { diagnosePatient } from './diagnosis-assistant';
 import { predictRelapseProbability } from './relapse-prediction';
 import { generateSummary, type SummaryInput } from './ai-summary-generator';
@@ -21,23 +20,19 @@ import {
     type DiagnosePatientInput, 
     type RelapsePredictionInput,
     OrchestratorInputSchema,
-    type OrchestratorInput
+    type OrchestratorInput,
+    OrchestratorOutputSchema,
+    type OrchestratorOutput
 } from './schemas';
 
 
-export const OrchestratorOutputSchema = z.object({
-    diagnosis: DiagnosePatientOutputSchema.optional(),
-    relapsePrediction: RelapsePredictionOutputSchema.optional(),
-    summary: SummaryOutputSchema.optional(),
-});
-export type OrchestratorOutput = z.infer<typeof OrchestratorOutputSchema>;
+export { type OrchestratorInput, type OrchestratorOutput, OrchestratorOutputSchema };
 
 
 export async function orchestratorAgent(input: OrchestratorInput): Promise<OrchestratorOutput> {
     return orchestratorAgentFlow(input);
 }
 
-// Initialize Firebase and Firestore inside the flow to ensure it runs only on the server
 const orchestratorAgentFlow = ai.defineFlow(
   {
     name: 'orchestratorAgentFlow',
@@ -46,13 +41,6 @@ const orchestratorAgentFlow = ai.defineFlow(
   },
   async (input) => {
     
-    // Dynamically import server-only modules
-    const { initializeFirebase } = await import('@/lib/firebase');
-    const { getFirestore } = await import('firebase-admin/firestore');
-
-    initializeFirebase();
-    const db = getFirestore();
-
     console.log(`🚀 Orchestrator agent started for patient: ${input.patientId}`);
     
     let comprehensiveHistory = `Patient Name: ${input.name}, Age: ${input.age}, Gender: ${input.gender}.\n`;
@@ -113,24 +101,9 @@ const orchestratorAgentFlow = ai.defineFlow(
         summary: summaryResult.status === 'fulfilled' ? summaryResult.value : undefined,
     };
 
-    // Save results to Firestore
-    try {
-        const patientDocRef = db.collection('patients').doc(input.patientId);
-        const patientDataToSave = {
-            ...input,
-            registrationDate: new Date().toISOString().split('T')[0],
-            aiResults: results,
-            processingErrors: errors.length > 0 ? errors : null,
-            processingStatus: errors.length > 0 ? 'partial_success' : 'completed',
-            integratedAnalysisStatus: 'pending' as 'pending' | 'completed' | 'failed',
-        };
-
-        await patientDocRef.set(patientDataToSave);
-        console.log(`Successfully saved AI results to Firestore for patient: ${input.patientId}`);
-    } catch (error) {
-        console.error(`Failed to save AI results to Firestore for patient ${input.patientId}:`, error);
-        // Optionally, re-throw the error or handle it as needed
-        throw new Error(`Failed to save data to Firestore: ${error instanceof Error ? error.message : String(error)}`);
+    console.log(`AI results for patient ${input.patientId}:`, JSON.stringify(results, null, 2));
+    if (errors.length > 0) {
+        console.error(`Processing errors for patient ${input.patientId}:`, JSON.stringify(errors, null, 2));
     }
 
     console.log(`Orchestrator agent finished for patient: ${input.patientId}`);
@@ -138,3 +111,5 @@ const orchestratorAgentFlow = ai.defineFlow(
     return results;
   }
 );
+
+    

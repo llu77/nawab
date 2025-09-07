@@ -1,5 +1,5 @@
 
-import { z } from 'genkit';
+import { z } from 'zod';
 
 /**
  * @fileOverview This file contains the Zod schemas and TypeScript types for the AI flows.
@@ -206,3 +206,5 @@ export const IntegratedAnalysisOutputSchema = z.object({
     requiresManualReview: z.boolean().describe("A flag indicating if the case has conflicts or low confidence, requiring manual review."),
 });
 export type IntegratedAnalysisOutput = z.infer<typeof IntegratedAnalysisOutputSchema>;
+
+    
