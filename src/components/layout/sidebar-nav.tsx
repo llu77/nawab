@@ -60,7 +60,7 @@ export function SidebarNav() {
           </div>
         </div>
         <div className="px-2 pb-2">
-            <div className="border rounded-md px-3 py-2 text-center">
+            <div className="border border-accent rounded-md px-3 py-2 text-center">
                 <p className="font-ruqaa text-lg">عيادات اداك الطبية</p>
             </div>
         </div>
