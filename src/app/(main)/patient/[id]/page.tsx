@@ -185,7 +185,7 @@ export default function PatientProfilePage({ params }: { params: { id: string } 
         <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="initial-assessment">التقييم الأولي</TabsTrigger>
-                <TabsTrigger value="integrated-analysis" disabled={patient.integratedAnalysisStatus !== 'completed'}>التحليل المتكامل</TabsTrigger>
+                <TabsTrigger value="integrated-analysis">التحليل المتكامل</TabsTrigger>
                 <TabsTrigger value="discussion" disabled>المناقشة</TabsTrigger>
             </TabsList>
             
@@ -227,7 +227,7 @@ export default function PatientProfilePage({ params }: { params: { id: string } 
                     </CardContent>
                 </Card>
 
-                <Accordion type="multiple" className="w-full space-y-4">
+                <Accordion type="multiple" className="w-full space-y-4" defaultValue={['item-1']}>
                   <Card>
                     <AccordionItem value="item-1" className="border-0">
                        <AccordionTrigger className="p-4 text-lg font-semibold hover:no-underline">
@@ -433,5 +433,3 @@ export default function PatientProfilePage({ params }: { params: { id: string } 
     </>
   );
 }
-
-    
