@@ -56,7 +56,7 @@ export function SidebarNav() {
           </svg>
           <div className="flex flex-col">
             <h2 className="text-lg font-headline font-semibold">NawabMD</h2>
-            <p className="text-xs text-muted-foreground">الدعم السريري بالذكاء الاصطناعي</p>
+            <p className="text-xs text-muted-foreground font-ruqaa">Clinical support with artificial intelligence</p>
           </div>
         </div>
         <div className="px-2 pb-2">
