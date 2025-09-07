@@ -10,7 +10,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { diagnosePatient } from './diagnosis-assistant';
 import { predictRelapseProbability } from './relapse-prediction';
 import { generateSummary, type SummaryInput } from './ai-summary-generator';
@@ -25,7 +25,9 @@ import {
     type OrchestratorOutput,
     DiagnosePatientOutput,
     RelapsePredictionOutput,
-    SummaryOutput
+    SummaryOutput,
+    IntegratedAnalysisOutputSchema,
+    type IntegratedAnalysisOutput
 } from './schemas';
 
 export const OrchestratorInputSchema = z.object({
@@ -134,7 +136,8 @@ const orchestratorAgentFlow = ai.defineFlow(
             registrationDate: new Date().toISOString().split('T')[0],
             aiResults: results,
             processingErrors: errors.length > 0 ? errors : null,
-            processingStatus: errors.length > 0 ? 'partial_success' : 'completed'
+            processingStatus: errors.length > 0 ? 'partial_success' : 'completed',
+            integratedAnalysisStatus: 'pending' as 'pending' | 'completed' | 'failed',
         };
 
         await patientDocRef.set(patientDataToSave);
