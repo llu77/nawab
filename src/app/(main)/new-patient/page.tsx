@@ -160,7 +160,7 @@ export default function NewPatientPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>الجنس</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger className="text-base">
                                   <SelectValue placeholder="اختر الجنس..." />
