@@ -56,7 +56,7 @@ export default function NewPatientPage() {
     resolver: zodResolver(newPatientFormSchema),
     defaultValues: {
       name: "",
-      age: "" as any,
+      age: undefined,
       gender: "",
       patientHistory: "",
       symptoms: [],
@@ -148,7 +148,7 @@ export default function NewPatientPage() {
                         <FormItem>
                           <FormLabel>العمر</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="مثال: 35" {...field} className="text-base"/>
+                            <Input type="number" placeholder="مثال: 35" {...field} className="text-base" value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
