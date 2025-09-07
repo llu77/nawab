@@ -36,7 +36,7 @@ const relapsePredictionPrompt = ai.definePrompt({
   Please provide the relapse probability as a percentage (0-100) and a detailed rationale.
   Ensure that the output is valid and adheres to the schema.
   Remember that the schema descriptions will be passed to the LLM to guide formatting, so be as descriptive as possible.
-  `, // Updated prompt string to include instructions to LLM.
+  `, 
 });
 
 // Define the Genkit flow for relapse prediction

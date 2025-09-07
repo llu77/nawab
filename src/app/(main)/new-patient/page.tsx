@@ -30,24 +30,17 @@ import { Loader } from "lucide-react";
 import { runOrchestratorAction } from "@/app/actions";
 import { OrchestratorInputSchema } from "@/ai/flows/schemas";
 
-// Align the client-side schema with the OrchestratorInputSchema by picking fields
-const assessmentSchema = OrchestratorInputSchema.pick({
-    name: true,
-    age: true,
-    gender: true,
-    patientHistory: true,
-    addictionHistory: true,
-    addictionDetails: true,
-    familyHistory: true,
-    familyHistoryDetails: true,
+// This client-side schema is now derived from the main OrchestratorInputSchema
+// but with client-specific refinements for better UX.
+const assessmentSchema = OrchestratorInputSchema.omit({ 
+  patientId: true, // Generated on the client
+  symptoms: true, // Handled by a separate field
 }).extend({
-    // Add client-specific fields
     mainSymptom: z.string().min(1, "يجب اختيار عرض رئيسي واحد على الأقل"),
-    medicationDetails: z.string().optional(),
-}).refine(data => !data.addictionHistory || (data.addictionHistory && data.addictionDetails), {
+}).refine(data => !data.addictionHistory || (data.addictionHistory && data.addictionDetails && data.addictionDetails.length > 0), {
     message: "يرجى تقديم تفاصيل عن استخدام المواد.",
     path: ["addictionDetails"],
-}).refine(data => !data.familyHistory || (data.familyHistory && data.familyHistoryDetails), {
+}).refine(data => !data.familyHistory || (data.familyHistory && data.familyHistoryDetails && data.familyHistoryDetails.length > 0), {
     message: "يرجى تقديم تفاصيل عن التاريخ العائلي.",
     path: ["familyHistoryDetails"],
 });
@@ -70,13 +63,13 @@ export default function NewPatientPage() {
         name: "",
         age: undefined,
         gender: "male",
-        mainSymptom: "",
         patientHistory: "Initial assessment, no detailed history provided yet.",
         addictionHistory: false,
         addictionDetails: "",
         familyHistory: false,
         familyHistoryDetails: "",
-        medicationDetails: "",
+        currentMedications: [],
+        mainSymptom: "",
     }
   });
 
@@ -88,37 +81,44 @@ export default function NewPatientPage() {
     });
 
     try {
-      const orchestratorInput = {
-        patientId: patientId,
-        name: values.name || "N/A",
-        age: values.age,
+      // Reconstruct the input to match the full OrchestratorInputSchema
+      const orchestratorInput: z.infer<typeof OrchestratorInputSchema> = {
+        patientId,
+        name: values.name,
+        age: Number(values.age),
         gender: values.gender,
-        patientHistory: values.patientHistory || "No detailed history provided.",
+        patientHistory: values.patientHistory,
         symptoms: [values.mainSymptom],
-        currentMedications: values.medicationDetails ? [values.medicationDetails] : [],
+        currentMedications: values.currentMedications,
         addictionHistory: values.addictionHistory,
         addictionDetails: values.addictionDetails,
         familyHistory: values.familyHistory,
         familyHistoryDetails: values.familyHistoryDetails,
       };
 
+      console.log("Submitting to orchestrator:", orchestratorInput);
       const result = await runOrchestratorAction(orchestratorInput);
       console.log("Orchestrator Result:", result);
 
-      toast({
-        title: "اكتمل التحليل",
-        description: `تمت معالجة بيانات المريض بنجاح.`,
-        variant: "default",
-      });
-
-      // Redirect to the patient's result page
-      router.push(`/patients/${patientId}`);
+      if (result) {
+        toast({
+          title: "اكتمل التحليل",
+          description: "تمت معالجة بيانات المريض بنجاح.",
+          variant: "default",
+        });
+        // Store result in local storage to pass to the results page
+        localStorage.setItem(`patient_results_${patientId}`, JSON.stringify(result));
+        router.push(`/patients/${patientId}`);
+      } else {
+         throw new Error("AI analysis returned no result.");
+      }
 
     } catch (error) {
         console.error("AI processing failed:", error);
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
         toast({
             title: "خطأ في التحليل",
-            description: "حدث خطأ أثناء معالجة البيانات. يرجى المحاولة مرة أخرى.",
+            description: `فشلت المعالجة: ${errorMessage}`,
             variant: "destructive",
         });
     } finally {
@@ -147,7 +147,7 @@ export default function NewPatientPage() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>اسم المريض (اختياري)</FormLabel>
+                        <FormLabel>اسم المريض</FormLabel>
                         <FormControl>
                           <Input placeholder="مثال: أحمد عبدالله" {...field} />
                         </FormControl>
@@ -290,17 +290,18 @@ export default function NewPatientPage() {
                     
                     <FormField
                         control={form.control}
-                        name="medicationDetails"
+                        name="currentMedications"
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>الأدوية النفسية الحالية أو السابقة</FormLabel>
                              <FormDescription>
-                                اذكر الأدوية، الجرعات، والمدة إن وجدت.
+                                اذكر الأدوية، الجرعات، والمدة إن وجدت. أدخل كل دواء في سطر منفصل.
                             </FormDescription>
                             <FormControl>
-                            <Textarea
-                                placeholder="مثال: Zoloft 50mg لمدة سنة، توقف بسبب الآثار الجانبية."
-                                {...field}
+                             <Textarea
+                                placeholder="مثال:&#10;Zoloft 50mg&#10;Wellbutrin 150mg"
+                                value={Array.isArray(field.value) ? field.value.join('\n') : ''}
+                                onChange={(e) => field.onChange(e.target.value.split('\n').filter(m => m.trim() !== ''))}
                             />
                             </FormControl>
                             <FormMessage />

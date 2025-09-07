@@ -141,10 +141,10 @@ export type MedicationAnalysisOutput = z.infer<typeof MedicationAnalysisOutputSc
 export const OrchestratorInputSchema = z.object({
     patientId: z.string().describe("The unique identifier for the patient."),
     name: z.string().describe("The patient's full name."),
-    age: z.number().describe("The patient's age."),
+    age: z.number({required_error: "العمر مطلوب.", invalid_type_error: "يجب أن يكون العمر رقمًا."}).min(1, "العمر مطلوب").max(120, "عمر غير صالح"),
     gender: z.string().describe("The patient's gender."),
     patientHistory: z.string().describe("A brief summary of the patient's medical and psychological history."),
-    symptoms: z.array(z.string()).describe("A list of the patient's primary presenting symptoms."),
+    symptoms: z.array(z.string()).min(1, "يجب تحديد عرض واحد على الأقل.").describe("A list of the patient's primary presenting symptoms."),
     currentMedications: z.array(z.string()).optional().describe("A list of the patient's current or previous medications."),
     addictionHistory: z.boolean().describe("Whether the patient has a history of addiction."),
     addictionDetails: z.string().optional().describe("Details about the patient's addiction history."),
