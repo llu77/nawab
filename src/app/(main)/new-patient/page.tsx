@@ -115,8 +115,20 @@ export default function NewPatientPage() {
           description: "تمت معالجة بيانات المريض بنجاح.",
           variant: "default",
         });
+        
+        const storedResult = { ...result, input: orchestratorInput, submissionDate: new Date().toISOString() };
+        
         // Store result in local storage to pass to the results page
-        localStorage.setItem(`patient_results_${patientId}`, JSON.stringify(result));
+        localStorage.setItem(`patient_results_${patientId}`, JSON.stringify(storedResult));
+
+        // Add to patient list
+        const patientList = JSON.parse(localStorage.getItem('patient_list') || '[]');
+        const patientExists = patientList.some((p: any) => p.id === patientId);
+        if (!patientExists) {
+            patientList.push({ id: patientId, name: values.name, date: new Date().toISOString() });
+            localStorage.setItem('patient_list', JSON.stringify(patientList));
+        }
+
         router.push(`/patients/${patientId}`);
       } else {
          throw new Error("AI analysis returned no result.");
