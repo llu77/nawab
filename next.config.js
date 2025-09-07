@@ -12,9 +12,9 @@ const securityHeaders = [
   },
   {
     key: 'Content-Security-Policy',
-    // In development, allow 'unsafe-eval' for React Refresh (hot reloading).
+    // In development, allow 'unsafe-eval' and 'unsafe-inline' for React Refresh (hot reloading).
     // In production, maintain a strict policy.
-    value: `default-src 'self'; script-src 'self' ${isDev ? "'unsafe-eval'" : ''}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;`
+    value: `default-src 'self'; script-src 'self' ${isDev ? "'unsafe-eval' 'unsafe-inline'" : ''}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;`
   },
   {
     key: 'X-Content-Type-Options',
