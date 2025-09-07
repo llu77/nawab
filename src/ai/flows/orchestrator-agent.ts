@@ -14,20 +14,12 @@ import { z } from 'zod';
 import { diagnosePatient } from './diagnosis-assistant';
 import { predictRelapseProbability } from './relapse-prediction';
 import { generateSummary, type SummaryInput } from './ai-summary-generator';
-import { getFirestore } from "firebase-admin/firestore";
-import { initializeFirebase } from '@/lib/firebase';
 import { 
     DiagnosePatientOutputSchema, 
     RelapsePredictionOutputSchema, 
     SummaryOutputSchema, 
     type DiagnosePatientInput, 
     type RelapsePredictionInput,
-    type OrchestratorOutput,
-    DiagnosePatientOutput,
-    RelapsePredictionOutput,
-    SummaryOutput,
-    IntegratedAnalysisOutputSchema,
-    type IntegratedAnalysisOutput,
     OrchestratorInputSchema,
     type OrchestratorInput
 } from './schemas';
@@ -38,17 +30,14 @@ export const OrchestratorOutputSchema = z.object({
     relapsePrediction: RelapsePredictionOutputSchema.optional(),
     summary: SummaryOutputSchema.optional(),
 });
+export type OrchestratorOutput = z.infer<typeof OrchestratorOutputSchema>;
 
 
 export async function orchestratorAgent(input: OrchestratorInput): Promise<OrchestratorOutput> {
     return orchestratorAgentFlow(input);
 }
 
-// Initialize Firebase and Firestore
-initializeFirebase();
-const db = getFirestore();
-
-
+// Initialize Firebase and Firestore inside the flow to ensure it runs only on the server
 const orchestratorAgentFlow = ai.defineFlow(
   {
     name: 'orchestratorAgentFlow',
@@ -56,6 +45,14 @@ const orchestratorAgentFlow = ai.defineFlow(
     outputSchema: OrchestratorOutputSchema,
   },
   async (input) => {
+    
+    // Dynamically import server-only modules
+    const { initializeFirebase } = await import('@/lib/firebase');
+    const { getFirestore } = await import('firebase-admin/firestore');
+
+    initializeFirebase();
+    const db = getFirestore();
+
     console.log(`🚀 Orchestrator agent started for patient: ${input.patientId}`);
     
     let comprehensiveHistory = `Patient Name: ${input.name}, Age: ${input.age}, Gender: ${input.gender}.\n`;
