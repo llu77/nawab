@@ -25,7 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 
 const navItems = [
-  { href: "/", label: "لوحة التحكم", icon: LayoutDashboard },
+  { href: "/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/patients", label: "المرضى", icon: Users },
   { href: "/medication", label: "الأدوية", icon: Pill },
   { href: "/summarization", label: "التلخيص", icon: FileText },
@@ -39,8 +39,8 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   const checkActivePath = (path: string) => {
-    if (path === "/") return pathname === "/";
-    return pathname.startsWith(path);
+    if (path === "/dashboard") return pathname === "/dashboard";
+    return pathname.startsWith(path) && path !== "/dashboard";
   }
 
   return (

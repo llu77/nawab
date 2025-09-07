@@ -10,14 +10,16 @@ export function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Redirect unauthenticated users from dashboard pages to the login page
-  if (!token && pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  // Redirect unauthenticated users from main app pages to the login page
+  if (!token && !pathname.startsWith('/login')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    // return NextResponse.redirect(url);
   }
 
   // If the user is authenticated and tries to access login/register, redirect them to the dashboard
   if (token && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
-      return NextResponse.redirect(new URL('/', request.url));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
   }
   
   // Here, you would typically verify the token with Firebase Admin SDK on your backend.
