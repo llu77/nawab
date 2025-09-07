@@ -263,3 +263,5 @@ function RelapseCard({ relapsePrediction }: { relapsePrediction: RelapsePredicti
         </Card>
     )
 }
+
+    
