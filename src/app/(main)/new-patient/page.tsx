@@ -25,8 +25,12 @@ import { SYMPTOM_CATEGORIES } from "@/lib/symptoms";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { orchestratorAgent } from "@/ai/flows/orchestrator-agent";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { Loader } from "lucide-react";
 
-// Zod schema for validation
+// Zod schema for validation, aligned with OrchestratorInputSchema
 const assessmentSchema = z.object({
   name: z.string().optional(),
   age: z.coerce.number({ invalid_type_error: "يجب أن يكون العمر رقمًا" }).min(1, "العمر مطلوب"),
@@ -34,6 +38,7 @@ const assessmentSchema = z.object({
     required_error: "يجب تحديد الجنس",
   }),
   mainSymptom: z.string().min(1, "يجب اختيار عرض رئيسي واحد على الأقل"),
+  patientHistory: z.string().optional(), // Now optional
   hasSubstanceUse: z.boolean().default(false),
   substanceDetails: z.string().optional(),
   hasMedicationHistory: z.boolean().default(false),
@@ -45,6 +50,10 @@ const assessmentSchema = z.object({
 
 export default function NewPatientPage() {
   const [patientId, setPatientId] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+
 
   useEffect(() => {
     setPatientId(generatePatientId());
@@ -57,6 +66,7 @@ export default function NewPatientPage() {
         age: undefined,
         gender: undefined,
         mainSymptom: "",
+        patientHistory: "Initial assessment, no detailed history provided yet.",
         hasSubstanceUse: false,
         substanceDetails: "",
         hasMedicationHistory: false,
@@ -66,9 +76,50 @@ export default function NewPatientPage() {
     }
   });
 
-  function onSubmit(values: z.infer<typeof assessmentSchema>) {
-    console.log("Assessment data submitted:", values);
-    // Here you would typically send the data to your backend/AI agents
+  async function onSubmit(values: z.infer<typeof assessmentSchema>) {
+    setIsProcessing(true);
+    toast({
+        title: "بدء التحليل",
+        description: `جاري معالجة بيانات المريض: ${patientId}. قد تستغرق العملية دقيقة.`,
+    });
+
+    try {
+      const orchestratorInput = {
+        patientId: patientId,
+        name: values.name || "N/A",
+        age: values.age,
+        gender: values.gender,
+        patientHistory: values.patientHistory || "No detailed history provided.",
+        symptoms: [values.mainSymptom], // Starting with the main symptom
+        currentMedications: values.medicationDetails ? [values.medicationDetails] : [],
+        addictionHistory: values.hasSubstanceUse,
+        addictionDetails: values.substanceDetails,
+        familyHistory: values.hasFamilyHistory,
+        familyHistoryDetails: values.familyHistoryDetails,
+      };
+
+      const result = await orchestratorAgent(orchestratorInput);
+      console.log("Orchestrator Result:", result);
+
+      toast({
+        title: "اكتمل التحليل",
+        description: `تمت معالجة بيانات المريض بنجاح.`,
+        variant: "default",
+      });
+
+      // Redirect to the patient's result page (you'll build this next)
+      router.push(`/patients/${patientId}`);
+
+    } catch (error) {
+        console.error("AI processing failed:", error);
+        toast({
+            title: "خطأ في التحليل",
+            description: "حدث خطأ أثناء معالجة البيانات. يرجى المحاولة مرة أخرى.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsProcessing(false);
+    }
   }
 
   return (
@@ -315,8 +366,15 @@ export default function NewPatientPage() {
 
 
             <div className="flex justify-end pt-4">
-                <Button type="submit" size="lg">
-                    بدء التحليل بواسطة AI
+                <Button type="submit" size="lg" disabled={isProcessing}>
+                    {isProcessing ? (
+                        <>
+                            <Loader className="ml-2 h-5 w-5 animate-spin" />
+                            جاري التحليل...
+                        </>
+                    ) : (
+                        "بدء التحليل بواسطة AI"
+                    )}
                 </Button>
             </div>
           </form>
@@ -325,5 +383,3 @@ export default function NewPatientPage() {
     </>
   );
 }
-
-    
