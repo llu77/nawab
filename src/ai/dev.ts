@@ -4,4 +4,5 @@ import '@/ai/flows/medication-alternatives.ts';
 import '@/ai/flows/diagnosis-assistant.ts';
 import '@/ai/flows/ai-summary-generator.ts';
 import '@/ai/flows/orchestrator-agent.ts';
+import '@/ai/flows/integrated-analysis.ts';
 import '@/ai/flows/schemas.ts';

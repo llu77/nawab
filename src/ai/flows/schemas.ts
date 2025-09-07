@@ -80,3 +80,48 @@ export const OrchestratorOutputSchema = z.object({
     summary: SummaryOutputSchema.optional(),
 });
 export type OrchestratorOutput = z.infer<typeof OrchestratorOutputSchema>;
+
+
+//-////////////////////////////////////////////////////////////////
+// INTEGRATED ANALYSIS (MODEL 4) SCHEMAS
+//-////////////////////////////////////////////////////////////////
+
+export const IntegratedAnalysisInputSchema = z.object({
+    patientId: z.string().describe("The patient's unique ID."),
+    initialAnalysis: OrchestratorOutputSchema.describe("The results from the initial parallel processing phase (diagnosis, risk, summary).")
+});
+export type IntegratedAnalysisInput = z.infer<typeof IntegratedAnalysisInputSchema>;
+
+const TreatmentPlanPharmacologicalSchema = z.object({
+    firstLine: z.array(z.string()).describe("First-line medication recommendations."),
+    secondLine: z.array(z.string()).describe("Second-line medication recommendations."),
+    contraindicated: z.array(z.string()).describe("Medications that are contraindicated for this patient."),
+});
+
+const TreatmentPlanPsychotherapeuticSchema = z.object({
+    recommended: z.array(z.string()).describe("Recommended psychotherapeutic interventions (e.g., CBT, DBT)."),
+    duration: z.string().describe("Recommended duration for the therapy."),
+    frequency: z.string().describe("Recommended frequency of therapy sessions."),
+});
+
+const TreatmentPlanSchema = z.object({
+    pharmacological: TreatmentPlanPharmacologicalSchema,
+    psychotherapeutic: TreatmentPlanPsychotherapeuticSchema,
+});
+
+const IntegratedDiagnosisSchema = z.object({
+    primary: DiagnosisHypothesisSchema.describe("The confirmed primary diagnosis after integration."),
+    secondary: z.array(DiagnosisHypothesisSchema).describe("Any secondary or comorbid diagnoses."),
+    confidence: z.number().describe("The overall confidence in the integrated diagnosis (0-1)."),
+    consensus: z.enum(["full", "partial", "conflicting"]).describe("The level of consensus between the initial models."),
+});
+
+
+export const IntegratedAnalysisOutputSchema = z.object({
+    integratedDiagnosis: IntegratedDiagnosisSchema,
+    treatmentPlan: TreatmentPlanSchema,
+    clinicalDiscussion: z.string().describe("A detailed clinical discussion synthesizing all available data and justifying the treatment plan."),
+    references: z.array(z.string()).optional().describe("Citations or references used to formulate the plan."),
+    requiresManualReview: z.boolean().describe("A flag indicating if the case has conflicts or low confidence, requiring manual review."),
+});
+export type IntegratedAnalysisOutput = z.infer<typeof IntegratedAnalysisOutputSchema>;
