@@ -28,15 +28,23 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Loader } from "lucide-react";
 import { runOrchestratorAction } from "@/app/actions";
-import { OrchestratorInputSchema } from "@/ai/flows/schemas";
+import type { OrchestratorInput } from "@/ai/flows/schemas";
 
-// This client-side schema is now derived from the main OrchestratorInputSchema
-// but with client-specific refinements for better UX.
-const assessmentSchema = OrchestratorInputSchema.omit({ 
-  patientId: true, // Generated on the client
-  symptoms: true, // Handled by a separate field
-}).extend({
+// This is a client-side specific schema. It deliberately mirrors the server-side
+// OrchestratorInputSchema to ensure data shape is correct, but it breaks the
+// direct import dependency from a client component to a server-used file,
+// which was causing the build to fail.
+const assessmentSchema = z.object({
+    name: z.string().min(1, "اسم المريض مطلوب."),
+    age: z.number({required_error: "العمر مطلوب.", invalid_type_error: "يجب أن يكون العمر رقمًا."}).min(1, "العمر مطلوب.").max(120, "عمر غير صالح"),
+    gender: z.string(),
+    patientHistory: z.string(),
     mainSymptom: z.string().min(1, "يجب اختيار عرض رئيسي واحد على الأقل"),
+    currentMedications: z.array(z.string()).optional(),
+    addictionHistory: z.boolean(),
+    addictionDetails: z.string().optional(),
+    familyHistory: z.boolean(),
+    familyHistoryDetails: z.string().optional(),
 }).refine(data => !data.addictionHistory || (data.addictionHistory && data.addictionDetails && data.addictionDetails.length > 0), {
     message: "يرجى تقديم تفاصيل عن استخدام المواد.",
     path: ["addictionDetails"],
@@ -81,14 +89,15 @@ export default function NewPatientPage() {
     });
 
     try {
-      // Reconstruct the input to match the full OrchestratorInputSchema
-      const orchestratorInput: z.infer<typeof OrchestratorInputSchema> = {
+      // Reconstruct the input to match the full OrchestratorInput schema
+      // This is the data that will be sent to the server action.
+      const orchestratorInput: OrchestratorInput = {
         patientId,
         name: values.name,
         age: Number(values.age),
         gender: values.gender,
         patientHistory: values.patientHistory,
-        symptoms: [values.mainSymptom],
+        symptoms: [values.mainSymptom], // The form only has one main symptom for now
         currentMedications: values.currentMedications,
         addictionHistory: values.addictionHistory,
         addictionDetails: values.addictionDetails,
@@ -369,3 +378,5 @@ export default function NewPatientPage() {
     </>
   );
 }
+
+    

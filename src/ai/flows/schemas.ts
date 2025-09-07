@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 /**
  * @fileOverview This file contains the Zod schemas and TypeScript types for the AI flows.
- * This allows for shared, consistent data structures across different server actions
- * without violating the 'use server' directive constraints.
+ * This allows for shared, consistent data structures across different server-side flows.
+ * This file should only be imported by server-side code ('use server' files).
  */
 
 //-////////////////////////////////////////////////////////////////
@@ -12,15 +12,15 @@ import { z } from 'zod';
 
 export const DiagnosePatientInputSchema = z.object({
   sessionNotes: z.array(z.string()).describe('An array of session notes for the patient.'),
-  patientHistory: z.string().describe("The patient's medical history."),
+  patientHistory: z.string().describe("The patient's full, comprehensive medical history and reported symptoms."),
 });
 export type DiagnosePatientInput = z.infer<typeof DiagnosePatientInputSchema>;
 
 const DiagnosisHypothesisSchema = z.object({
-  diagnosis: z.string().describe('The possible diagnosis.'),
-  confidence: z.number().describe('The confidence level of the diagnosis (0-1).'),
-  reasoning: z.string().describe('The reasoning behind the diagnosis based on DSM-5 criteria.'),
-  supportingEvidence: z.string().describe('Supporting evidence from session notes and patient history.'),
+  diagnosis: z.string().describe('The possible diagnosis, e.g., "Major Depressive Disorder".'),
+  confidence: z.number().min(0).max(1).describe('The confidence level of the diagnosis (0-1).'),
+  reasoning: z.string().describe('The detailed reasoning behind the diagnosis based on DSM-5 criteria.'),
+  supportingEvidence: z.string().describe('Specific supporting evidence extracted from session notes and patient history.'),
 });
 
 export const DiagnosePatientOutputSchema = z.object({
@@ -39,8 +39,8 @@ export const RelapsePredictionInputSchema = z.object({
     .describe(
       'A detailed description of the patient’s recent behavioral patterns, including changes in mood, sleep, activity levels, social interactions, and adherence to treatment.'
     ),
-  patientHistory: z.string().describe('The patient’s medical and psychiatric history.'),
-  riskFactors: z.string().describe('Known risk factors specific to the patient.'),
+  patientHistory: z.string().describe('The patient’s comprehensive medical and psychiatric history.'),
+  riskFactors: z.string().describe('A summary of known risk factors specific to the patient (e.g., previous episodes, substance use).'),
 });
 export type RelapsePredictionInput = z.infer<typeof RelapsePredictionInputSchema>;
 
@@ -48,14 +48,16 @@ export type RelapsePredictionInput = z.infer<typeof RelapsePredictionInputSchema
 export const RelapsePredictionOutputSchema = z.object({
   relapseProbability: z
     .number()
+    .min(0).max(100)
     .describe(
       'The predicted probability of relapse, expressed as a percentage between 0 and 100.'
     ),
   rationale: z
     .string()
     .describe(
-      'A detailed explanation of the factors contributing to the relapse prediction, including specific behavioral patterns and risk factors.'
+      'A detailed explanation of the factors contributing to the relapse prediction, referencing specific behavioral patterns and risk factors.'
     ),
+  keyRiskFactors: z.array(z.string()).describe('A list of the most critical risk factors identified.'),
 });
 export type RelapsePredictionOutput = z.infer<typeof RelapsePredictionOutputSchema>;
 
@@ -64,23 +66,23 @@ export type RelapsePredictionOutput = z.infer<typeof RelapsePredictionOutputSche
 // AI SUMMARY GENERATOR SCHEMAS
 //-////////////////////////////////////////////////////////////////
 export const SummaryInputSchema = z.object({
-  sessionNotes: z.string().describe('The session notes to summarize.'),
-  patientData: z.string().describe('The patient data to summarize.'),
+  sessionNotes: z.string().describe('The raw, detailed session notes to be summarized.'),
+  patientData: z.string().describe('Structured or unstructured patient data to be included in the summary.'),
 });
 export type SummaryInput = z.infer<typeof SummaryInputSchema>;
 
 const CriticalAlertSchema = z.object({
     type: z.enum(["drug_interaction", "clinical", "safety"]).describe("The category of the alert."),
-    message: z.string().describe("A concise description of the alert."),
-    urgency: z.enum(["routine", "urgent", "stat"]).describe("The urgency level of the alert."),
+    message: z.string().describe("A concise but complete description of the alert."),
+    urgency: z.enum(["routine", "urgent", "stat"]).describe("The urgency level of the alert (stat being the highest)."),
 });
 
 export const SummaryOutputSchema = z.object({
-  briefing: z.string().describe("The executive summary briefing (5-15 lines)."),
-  keyPoints: z.array(z.string()).describe("A list of the most important key points."),
-  criticalAlerts: z.array(CriticalAlertSchema).describe("A list of critical alerts requiring attention."),
-  suggestedQuestions: z.array(z.string()).describe("A list of suggested questions to ask the patient during the next visit."),
-  pendingDecisions: z.array(z.string()).describe("A list of pending clinical decisions that need to be made."),
+  briefing: z.string().describe("A professional, concise executive summary briefing (5-15 lines) for a clinician."),
+  keyPoints: z.array(z.string()).describe("A bulleted list of the most important takeaways."),
+  criticalAlerts: z.array(CriticalAlertSchema).describe("A list of any critical alerts that require immediate attention."),
+  suggestedQuestions: z.array(z.string()).describe("A list of insightful, relevant questions to ask the patient during the next visit."),
+  pendingDecisions: z.array(z.string()).describe("A list of pending clinical decisions that the clinician needs to address."),
 });
 export type SummaryOutput = z.infer<typeof SummaryOutputSchema>;
 
@@ -91,15 +93,15 @@ export type SummaryOutput = z.infer<typeof SummaryOutputSchema>;
 //-////////////////////////////////////////////////////////////////
 
 export const MedicationAnalysisInputSchema = z.object({
-  patientHistory: z.string().describe("The patient's medical history, including diagnoses and comorbidities."),
-  patientGenetics: z.string().describe("Pharmacogenomic data, if available (e.g., CYP2D6 status)."),
-  currentMedications: z.string().describe("A comma-separated list of the patient's current medications, including dosage."),
+  patientHistory: z.string().describe("The patient's comprehensive medical history, including diagnoses and comorbidities."),
+  patientGenetics: z.string().optional().describe("Pharmacogenomic data, if available (e.g., CYP2D6 status). Can be empty."),
+  currentMedications: z.array(z.string()).describe("A list of the patient's current medications, including dosage if known."),
 });
 export type MedicationAnalysisInput = z.infer<typeof MedicationAnalysisInputSchema>;
 
 const MedicationAdjustmentSchema = z.object({
   medication: z.string().describe("The medication to be adjusted."),
-  recommendation: z.string().describe("The recommended adjustment (e.g., 'Increase dose to 20mg', 'Taper and discontinue')."),
+  recommendation: z.string().describe("The specific recommended adjustment (e.g., 'Increase dose to 20mg', 'Taper and discontinue')."),
   rationale: z.string().describe("The clinical reasoning for the recommendation."),
 });
 
@@ -141,10 +143,10 @@ export type MedicationAnalysisOutput = z.infer<typeof MedicationAnalysisOutputSc
 export const OrchestratorInputSchema = z.object({
     patientId: z.string().describe("The unique identifier for the patient."),
     name: z.string().describe("The patient's full name."),
-    age: z.number({required_error: "العمر مطلوب.", invalid_type_error: "يجب أن يكون العمر رقمًا."}).min(1, "العمر مطلوب").max(120, "عمر غير صالح"),
+    age: z.number().describe("Patient's age in years."),
     gender: z.string().describe("The patient's gender."),
     patientHistory: z.string().describe("A brief summary of the patient's medical and psychological history."),
-    symptoms: z.array(z.string()).min(1, "يجب تحديد عرض واحد على الأقل.").describe("A list of the patient's primary presenting symptoms."),
+    symptoms: z.array(z.string()).min(1).describe("A list of the patient's primary presenting symptoms."),
     currentMedications: z.array(z.string()).optional().describe("A list of the patient's current or previous medications."),
     addictionHistory: z.boolean().describe("Whether the patient has a history of addiction."),
     addictionDetails: z.string().optional().describe("Details about the patient's addiction history."),
@@ -205,3 +207,5 @@ export const IntegratedAnalysisOutputSchema = z.object({
     requiresManualReview: z.boolean().describe("A flag indicating if the case has conflicts or low confidence, requiring manual review."),
 });
 export type IntegratedAnalysisOutput = z.infer<typeof IntegratedAnalysisOutputSchema>;
+
+    
