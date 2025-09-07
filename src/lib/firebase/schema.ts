@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 import type { Symptom, RiskAssessment, SubstanceHistory, MedicationHistory, FamilyHistory } from '@/types/assessment';
 
@@ -36,4 +37,43 @@ export interface AssessmentDocument {
   familyHistory: FamilyHistory;
   timestamp: Timestamp;
   status: 'pending' | 'processing' | 'completed';
+}
+
+export interface DoctorDocument {
+    uid: string;
+    email: string;
+    name: string;
+    clinicId: string;
+    specialization: string;
+    encryptedData: string;
+    roles: ('doctor' | 'admin')[];
+    createdAt: Timestamp;
+}
+
+export interface SessionDocument {
+    userId: string;
+    deviceInfo: {
+        userAgent?: string;
+        ipAddress?: string;
+    };
+    createdAt: Timestamp;
+    expiresAt: Timestamp;
+    isActive: boolean;
+}
+
+export interface AuditLogDocument {
+    id: string;
+    timestamp: Timestamp;
+    userId: string;
+    action: string;
+    resource: {
+        type: string;
+        id: string;
+    };
+    ip?: string;
+    userAgent?: string;
+    result: 'success' | 'failure';
+    severity: 'info' | 'warning' | 'critical';
+    metadata?: Record<string, any>;
+    signature: string;
 }
