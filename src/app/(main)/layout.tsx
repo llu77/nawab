@@ -8,12 +8,12 @@ export default function MainLayout({
 }) {
   return (
     <SidebarProvider>
-      <SidebarNav />
-      <main className="md:pl-[var(--sidebar-width)]">
-        <div className="p-6 sm:p-8 md:p-10">
+      <div className="flex min-h-screen">
+        <SidebarNav />
+        <main className="flex-1 p-6 sm:p-8 md:p-10">
          {children}
-        </div>
-      </main>
+        </main>
+      </div>
     </SidebarProvider>
   );
 }

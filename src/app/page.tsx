@@ -1,10 +1,5 @@
-// app/page.tsx
-import PatientsDashboardPage from "./(dashboard)/patients/page";
+import DashboardPage from './(main)/page';
 
 export default function Home() {
-  return (
-    <main>
-      <PatientsDashboardPage />
-    </main>
-  );
+  return <DashboardPage />;
 }
