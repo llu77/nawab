@@ -1,7 +1,8 @@
 'use server';
 
 import { orchestratorAgent } from "@/ai/flows/orchestrator-agent";
-import { OrchestratorInputSchema, type OrchestratorInput } from "@/ai/flows/schemas";
+import { generateSummary } from "@/ai/flows/ai-summary-generator";
+import { OrchestratorInputSchema, SummaryInputSchema, type OrchestratorInput, type SummaryInput } from "@/ai/flows/schemas";
 
 /**
  * A dedicated server action to bridge the client and the AI orchestrator.
@@ -27,5 +28,27 @@ export async function runOrchestratorAction(input: OrchestratorInput) {
             throw new Error(`Failed to execute AI analysis: ${error.message}`);
         }
         throw new Error("An unknown error occurred during AI analysis orchestration.");
+    }
+}
+
+
+/**
+ * Server action to run the AI summary generator.
+ * @param input The session notes and patient data.
+ * @returns The generated summary.
+ */
+export async function runSummaryAction(input: SummaryInput) {
+    try {
+        const validatedInput = SummaryInputSchema.parse(input);
+        console.log("Server Action: Running summary generator with validated input:", validatedInput);
+        const result = await generateSummary(validatedInput);
+        console.log("Server Action: Summary generator completed with result:", result);
+        return JSON.parse(JSON.stringify(result));
+    } catch (error) {
+        console.error("Error running summary action:", error);
+        if (error instanceof Error) {
+            throw new Error(`Failed to execute AI summary generation: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred during AI summary generation.");
     }
 }
