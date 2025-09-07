@@ -111,8 +111,8 @@ export default function DashboardPage() {
 
   const DashboardSkeleton = () => (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
+      <div className="grid gap-4 md:grid-cols-2">
+        {[...Array(2)].map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <Skeleton className="h-5 w-24" />
@@ -171,170 +171,136 @@ export default function DashboardPage() {
         title="لوحة التحكم"
         description="نظرة عامة على المرضى والمهام القادمة."
       />
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
-          <TabsTrigger value="analytics" disabled>
-            التحليلات
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="overview">
-          {isLoading ? (
-            <DashboardSkeleton/>
-          ) : error ? (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>حدث خطأ</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ) : (
-            <div className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-base font-medium">
-                      إجمالي المرضى
-                    </CardTitle>
-                    <Users className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">{patients.length}</div>
-                    <p className="text-sm text-muted-foreground">
-                      مريض مسجل في النظام
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-base font-medium">
-                      المواعيد اليوم
-                    </CardTitle>
-                    <CalendarDays className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">0</div>
-                    <p className="text-sm text-muted-foreground">
-                      (ميزة قيد التطوير)
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-base font-medium">
-                      تنبيهات المخاطر
-                    </CardTitle>
-                    <ShieldAlert className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className={`text-3xl font-bold ${highRiskAlerts > 0 ? 'text-destructive' : ''}`}>{highRiskAlerts}</div>
-                    <p className="text-sm text-muted-foreground">
-                      حالة ذات خطورة عالية
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-base font-medium">
-                      المهام المعلقة
-                    </CardTitle>
-                    <Activity className="h-5 w-5 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">0</div>
-                    <p className="text-sm text-muted-foreground">
-                      (ميزة قيد التطوير)
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4">
-                  <CardHeader>
-                    <CardTitle>أحدث المرضى</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pl-2">
-                    {patients.length > 0 ? (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>اسم المريض</TableHead>
-                            <TableHead>تاريخ التسجيل</TableHead>
-                            <TableHead>مستوى الخطورة</TableHead>
-                            <TableHead className="text-right">الإجراء</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {patients.slice(0, 5).map((patient) => {
-                            const risk = getRiskLevel(patient);
-                            return (
-                              <TableRow key={patient.id}>
-                                <TableCell className="font-medium">
-                                  {patient.name}
-                                </TableCell>
-                                <TableCell>{patient.registrationDate}</TableCell>
-                                <TableCell>
-                                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${risk.className}`}>
-                                    {risk.label}
-                                  </span>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  <Button asChild variant="outline" size="sm">
-                                    <Link href={`/patient/${patient.id}`}>عرض الملف</Link>
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    ) : (
-                       <div className="text-center text-muted-foreground py-10">
-                          <p>لا يوجد مرضى مسجلون بعد.</p>
-                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-                <Card className="col-span-3">
-                  <CardHeader>
-                    <CardTitle>أدوات الذكاء الاصطناعي</CardTitle>
-                    <CardDescription>
-                      أدوات مساعدة لتعزيز سير عملك.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {quickAccessTools.map((tool) => (
-                        <Link
-                          href={tool.href}
-                          key={tool.title}
-                          className="group block"
-                        >
-                          <div className="flex items-start gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                              <tool.icon className="h-6 w-6" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="font-semibold text-base">
-                                {tool.title}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {tool.description}
-                              </p>
-                            </div>
-                            <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+       <div className="space-y-6">
+        {isLoading ? (
+          <DashboardSkeleton/>
+        ) : error ? (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>حدث خطأ</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : (
+          <div className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-base font-medium">
+                    إجمالي المرضى
+                  </CardTitle>
+                  <Users className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{patients.length}</div>
+                  <p className="text-sm text-muted-foreground">
+                    مريض مسجل في النظام
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-base font-medium">
+                    تنبيهات المخاطر
+                  </CardTitle>
+                  <ShieldAlert className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-3xl font-bold ${highRiskAlerts > 0 ? 'text-destructive' : ''}`}>{highRiskAlerts}</div>
+                  <p className="text-sm text-muted-foreground">
+                    حالة ذات خطورة عالية
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-          )}
-        </TabsContent>
-      </Tabs>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+              <Card className="col-span-4">
+                <CardHeader>
+                  <CardTitle>أحدث المرضى</CardTitle>
+                </CardHeader>
+                <CardContent className="pl-2">
+                  {patients.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>اسم المريض</TableHead>
+                          <TableHead>تاريخ التسجيل</TableHead>
+                          <TableHead>مستوى الخطورة</TableHead>
+                          <TableHead className="text-right">الإجراء</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {patients.slice(0, 5).map((patient) => {
+                          const risk = getRiskLevel(patient);
+                          return (
+                            <TableRow key={patient.id}>
+                              <TableCell className="font-medium">
+                                {patient.name}
+                              </TableCell>
+                              <TableCell>{patient.registrationDate}</TableCell>
+                              <TableCell>
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${risk.className}`}>
+                                  {risk.label}
+                                </span>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button asChild variant="outline" size="sm">
+                                  <Link href={`/patient/${patient.id}`}>عرض الملف</Link>
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                      <div className="text-center text-muted-foreground py-10">
+                        <p>لا يوجد مرضى مسجلون بعد.</p>
+                      </div>
+                  )}
+                </CardContent>
+              </Card>
+              <Card className="col-span-3">
+                <CardHeader>
+                  <CardTitle>أدوات الذكاء الاصطناعي</CardTitle>
+                  <CardDescription>
+                    أدوات مساعدة لتعزيز سير عملك.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {quickAccessTools.map((tool) => (
+                      <Link
+                        href={tool.href}
+                        key={tool.title}
+                        className="group block"
+                      >
+                        <div className="flex items-start gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <tool.icon className="h-6 w-6" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-base">
+                              {tool.title}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {tool.description}
+                            </p>
+                          </div>
+                          <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
 }
+
+    
 
     
