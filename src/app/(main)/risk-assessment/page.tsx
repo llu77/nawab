@@ -109,7 +109,7 @@ export default function RiskAssessmentPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>التشخيص المتوقع (اختياري)</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                           <FormControl>
                             <SelectTrigger className="text-base">
                               <SelectValue placeholder="اختر التشخيص المتوقع..." />
